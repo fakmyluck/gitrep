@@ -215,18 +215,12 @@ func SquareCheck(grid [9][9][11]int) [9][9][11]int { //2
 								grid[Y][X][i] *= snum[i]
 							}
 
-							/*if grid [Y][X][9]!=9{		// ZACOMMENTIT"!?!?!?!??!
-								grid [Y][X][ grid[Y][X][9] ]=1	// NUZHNALI "1" esli [9] != 9 ????
-							}*/
-
 						}
-
 					}
 				}
 			}
 		}
 	}
-
 	return grid
 }
 
@@ -277,7 +271,7 @@ func SetCell(grid *[9][9][11]int, Y int, X int) {
 	//PrintOnes(grid, SetThisNumZero)
 }
 
-func SolveOne(grid *[9][9][11]int, CC *bool) {
+func SolveOne(grid *[9][9][11]int, CC *bool) {	// if 001000000 => [9]=2
 
 	*CC = false
 	dbg[0] = dbg[1]
@@ -302,7 +296,7 @@ func SolveOne(grid *[9][9][11]int, CC *bool) {
 	}
 }
 
-func SolveTwo(grid *[9][9][11]int, CC *bool) {
+func SolveTwo(grid *[9][9][11]int, CC *bool) {	//esli iz 9ti jachejek, 8 zanjati
 	*CC = false
 	dbg[0] = dbg[1]
 	dbg[1] = 6
@@ -354,6 +348,49 @@ func SolveTwo(grid *[9][9][11]int, CC *bool) {
 			}
 		}
 		//// >>> zakanchivaetsa hernya
+
+	}
+}
+
+func ClearHidden(grid *[9][9][11]int, CC *bool){	//esli grid[3][1][4] && grid[3][2][4] == 1 --> grid[3][0:9][4]=0 
+	var sum_num [9]int
+	var Y_check,X_check int
+	for base_y:=0;base_y<9;base_y+=3{
+		for base_x:=0;base_x<9;base_x+=3{
+
+			for y:=0; y<base_y+3 ; y++{
+				for x:=0; x<base_x+3 ; x++{
+					for i:=0 ; i<9 ; i++{
+						sum_num[i]+=grid[x][y][i]
+					}
+				}
+			}
+
+			Y_check,X_check=9,9
+		for n:=0 ; n<9 ; n++{
+			if sum_num[n] ==2 || sum_num[n]==3{
+
+				for y:=0; y<base_y+3 ; y++{
+					for x:=0; x<base_x+3 ; x++{
+						if grid[y][x][n]==1{
+							if Y_check==9{
+								Y_check = y
+								X_check = x
+							}else if Y_
+
+							
+							
+						}
+					}
+				}
+				//proverit' stojat li v liniju?
+			} 
+		}
+
+		for i:=0 ; i<9 ; i++{	//onulenie
+			sum_num[i]=0
+		}
+		}
 
 	}
 }
