@@ -358,8 +358,8 @@ func ClearHidden(grid *[9][9][11]int, CC *bool){	//esli grid[3][1][4] && grid[3]
 	for base_y:=0;base_y<9;base_y+=3{
 		for base_x:=0;base_x<9;base_x+=3{
 
-			for y:=0; y<base_y+3 ; y++{
-				for x:=0; x<base_x+3 ; x++{
+			for y:=base_y; y<base_y+3 ; y++{
+				for x:=base_x; x<base_x+3 ; x++{
 					for i:=0 ; i<9 ; i++{
 						sum_num[i]+=grid[x][y][i]
 					}
@@ -370,20 +370,32 @@ func ClearHidden(grid *[9][9][11]int, CC *bool){	//esli grid[3][1][4] && grid[3]
 		for n:=0 ; n<9 ; n++{
 			if sum_num[n] ==2 || sum_num[n]==3{
 
-				for y:=0; y<base_y+3 ; y++{
-					for x:=0; x<base_x+3 ; x++{
+				for y:=base_y; y<base_y+3 ; y++{
+					for x:=base_x; x<base_x+3 ; x++{
 						if grid[y][x][n]==1{
 							if Y_check==9{
 								Y_check = y
 								X_check = x
-							}else if Y_
-
-							
-							
+							}else if Y_check!=y{
+								Y_check=11
+							}else if X_check!=x{
+								Y_check=11
+							}	
 						}
 					}
 				}
 				//proverit' stojat li v liniju?
+
+
+				if Y_check!=11{
+					Z=Y_check
+				}else if X_check!=11{
+					Z=X_check
+				}
+				if Z!=11 {
+
+					for Z// sdelat' wtobi for propuskal base_y/x +3 
+				}
 			} 
 		}
 
