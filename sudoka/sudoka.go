@@ -30,10 +30,6 @@ func PrintGrid(grid *[9][9][11]int) {
 				fmt.Print(colorCyan) //cyan
 			}
 
-			if grid_column[10] > 20 { // KRASNOE UBRAT'
-				grid_column[10] -= 20
-			}
-
 			if grid_column[10] == 1 {
 				fmt.Print(colorWhite)
 			}
@@ -303,19 +299,19 @@ func PrintOnes(grid *[9][9][11]int, a int) {
 	// colorYellow := "\033[33m"
 	// colorBlue := "\033[34m"
 	// colorPurple := "\033[35m"
-	// colorCyan := "\033[36m"
-
+	colorCyan := "\033[36m"
+	fmt.Println(a + 1)
 	for iY := 0; iY < 9; iY++ {
 		for iX := 0; iX < 9; iX++ {
 
 			if grid[iY][iX][10] == 7 {
 				fmt.Print(colorGreen)
-			} else if grid[iY][iX][10] == 7 {
+			} else if grid[iY][iX][10] == 6 {
 				fmt.Print(colorRed)
 			}
 
 			if grid[iY][iX][9] == a {
-				fmt.Print(a+1, " ")
+				fmt.Print(colorCyan, a+1, " ")
 
 			} else if grid[iY][iX][9] != 9 {
 				fmt.Print("o ")
@@ -337,7 +333,7 @@ func PrintOnes(grid *[9][9][11]int, a int) {
 	}
 
 	fmt.Println()
-	fmt.Println(a + 1)
+
 }
 
 //7
@@ -415,7 +411,7 @@ func SolveTwo(grid *[9][9][11]int, CC *bool) { //esli summa[i] na linii == 1 => 
 				for n := 0; n < 9; n++ {
 					if grid[y][n][i] == 1 {
 						grid[y][n][9] = i
-						grid[y][n][10] = 22
+						grid[y][n][10] = 2
 
 						SetCell(&*grid, y, n)
 						*CC = true
@@ -430,7 +426,7 @@ func SolveTwo(grid *[9][9][11]int, CC *bool) { //esli summa[i] na linii == 1 => 
 					if grid[n][y][i] == 1 {
 
 						grid[n][y][9] = i
-						grid[n][y][10] = 22
+						grid[n][y][10] = 2
 
 						SetCell(&*grid, n, y)
 						*CC = true
@@ -474,14 +470,15 @@ func SolveTwoCube(grid *[9][9][11]int, CC *bool) { // esli summa[i] v 3x3 kvadra
 					for y := base_y; y < base_y+3; y++ {
 						for x := base_x; x < base_x+3; x++ {
 							if grid[y][x][i] == 1 { //
-								//	fmt.Printf("\033[32m%v[%v][%v][%v]=%v\n\033[0m", grid[y][x][i], y, x, i, i)
+
 								if grid[y][x][9] != 9 {
 									fmt.Printf("ERROR!\nTryting to swap %v with %v\n", grid[y][x][9], i) // <---== Ubrat' ESLI VSE OK
 								}
 								*CC = true
 								grid[y][x][9] = i
-								SetCell(*&grid, y, x)
-								grid[y][x][10] = 23 //YELLOW
+
+								grid[y][x][10] = 3 //YELLOW
+								SetCell(grid, y, x)
 							}
 
 						}
@@ -495,116 +492,71 @@ func SolveTwoCube(grid *[9][9][11]int, CC *bool) { // esli summa[i] v 3x3 kvadra
 
 }
 
-// NAJTI V CHEM PROBLEMA
 //11
-func ClearHidden(grid *[9][9][11]int, CC *bool) { //esli grid[3][1][4] && grid[3][2][4] == 1 --> grid[3][0:9][4]=0
+func ClearHidden(grid *[9][9][11]int) { //esli grid[3][1][4] && grid[3][2][4] == 1 --> grid[3][0:9][4]=0
 	dbg[0] = dbg[1]
 	dbg[1] = dbg[2]
 	dbg[2] = 11
 
-	var sum_num [9]int
-	var Y_check, X_check int
+	//tmparray := grid
+	var xck, yck int
 
-	var y_change, x_change, Z_skip int
-	var counter_ptr *int
+	for cnum := 0; cnum < 9; cnum++ {
 
-	for base_y := 0; base_y < 9; base_y += 3 {
-		for base_x := 0; base_x < 9; base_x += 3 {
+		for base_y := 0; base_y < 9; base_y += 3 {
+			for base_x := 0; base_x < 9; base_x += 3 {
 
-			for y := base_y; y < base_y+3; y++ {
-				for x := base_x; x < base_x+3; x++ {
-					for i := 0; i < 9; i++ {
-						if grid[y][x][9] == i && grid[y][x][i] == 1 {
-							fmt.Printf("\nCHTOTO POSHLO NE TAK: grid[%v][%v][9] == %v && grid[y][x][i] == 1\n", y, x, i)
+				xck, yck = 9, 9
+
+				for y := base_y; y < base_y+3; y++ {
+					for x := base_x; x < base_x+3; x++ {
+
+						if grid[y][x][9] == cnum {
+							goto skipsquare
 						}
-						sum_num[i] += grid[y][x][i]
-
-					}
-				}
-			}
-
-			fmt.Print(sum_num, " ")
-			/// PRODOLZHIT' NIZHE
-			Y_check, X_check = 9, 9
-			for n := 0; n < 9; n++ {
-				if sum_num[n] == 2 || sum_num[n] == 3 {
-
-					for y := base_y; y < base_y+3; y++ {
-						for x := base_x; x < base_x+3; x++ {
-							if grid[y][x][n] == 1 {
-								if Y_check == 9 {
-									Y_check = y
-									X_check = x
-								} else {
-
-									if Y_check != y {
-										Y_check = 11
-									}
-									if X_check != x {
-										X_check = 11
-									}
-
+						if grid[y][x][cnum] == 1 {
+							if yck == 9 {
+								yck, xck = y, x
+							} else {
+								if yck != y {
+									yck = 11
+								}
+								if xck != x {
+									xck = 11
 								}
 							}
 						}
 					}
+				}
 
-					if X_check == 9 && Y_check == 9 {
-						fmt.Printf("????err??CHECK == 9\t n: %v  check%v/%v   sum:%v\n", n, base_y, base_x, sum_num[n])
-						//break
-					}
+				if yck == 9 {
+					fmt.Printf("cheto poshlo ne tak: yck=%v  xck=%v  cnum=%v\n", yck, xck, cnum)
+				}
 
-					if X_check == 11 && Y_check == 11 {
-						fmt.Printf("errCHECK == 11\t")
-						break
-					}
-
-					//proverit' stojat li v liniju?
-
-					/// !! NEZABIT' OBNULAT' VSE!!!
-					y_change = 0
-					x_change = 0
-
-					if Y_check != 11 {
-						y_change = Y_check
-						counter_ptr = &x_change
-						Z_skip = base_x
-					} else if X_check != 11 {
-						x_change = X_check
-						counter_ptr = &y_change
-						Z_skip = base_y
-					} else {
-						break
-					}
-
-					if y_change == 11 || x_change == 11 {
-						fmt.Println("ERROR")
-					}
-
-					//			fmt.Println("n:", n+1, "  y_change:", y_change, "   x_change:", y_change)
-					//		PrintOnes(&*grid, n)
-					for *counter_ptr = 0; *counter_ptr < 9; *counter_ptr++ {
-						grid[y_change][x_change][10] = 8
-						if *counter_ptr < Z_skip || *counter_ptr > Z_skip+2 {
-							grid[y_change][x_change][n] = 0
-							grid[y_change][x_change][10] = 7
+				if yck < 9 {
+					for i := 0; i < 9; i++ {
+						if i < base_x || i > base_x+2 {
+							grid[yck][i][cnum] = 0
+							grid[yck][i][10] = 6 //debug
 						}
 					}
-					//		PrintOnes(grid, n)
-
-					// if Z!=11 {
-
-					// 	for Z// sdelat' wtobi for propuskal base_y/x +3
-					// }
+					//PrintOnes(grid, cnum)
 				}
-			}
 
-			for i := 0; i < 9; i++ { //onulenie
-				sum_num[i] = 0
+				if xck < 9 {
+					for i := 0; i < 9; i++ {
+						if i < base_y || i > base_y+2 {
+							grid[i][xck][cnum] = 0
+							grid[i][xck][10] = 6 //debug
+						}
+					}
+					//PrintOnes(grid, cnum)
+				}
+			skipsquare:
 			}
-		}
-		fmt.Println()
-	}
+		} //base_y
+
+	} //cnum
 }
 
 func Solvesudoku(unsolved [9][9]int) {
@@ -614,10 +566,11 @@ func Solvesudoku(unsolved [9][9]int) {
 
 	ErrorCheck(grid, &e)
 	grid = LineCheck(grid)
-	PrintGrid(&grid)
+	//PrintGrid(&grid)
 
 	for CanContinue {
 		CanContinue = false
+		ClearHidden(&grid)
 
 		SolveOne(&grid, &CanContinue)
 
@@ -649,7 +602,6 @@ func Solvesudoku(unsolved [9][9]int) {
 	}
 
 	//PrintOnes(&grid, 2)
-	ClearHidden(&grid, &CanContinue)
 
 	ErrorCheck(grid, &e)
 
