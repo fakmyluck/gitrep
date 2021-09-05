@@ -107,6 +107,15 @@ func Returnifone(posibl [11]int) int { // nahodit' edinstvenniy "1"
 	return n
 }
 
+func SumRow(row [9]int) int {
+	var sum int
+
+	for _, num := range row {
+		sum += num
+	}
+	return sum
+}
+
 //3
 func GridInit(unsolved [9][9]int) [9][9][11]int {
 	dbg[0] = dbg[1]
@@ -559,6 +568,98 @@ func ClearHidden(grid *[9][9][11]int) { //esli grid[3][1][4] && grid[3][2][4] ==
 	} //cnum
 }
 
+func FullCellLine(grid *[9][9][11]int) {
+	var sumyx, sumxy [9][9]int
+	// var sumxy[9] int
+	var num1, num2 int
+
+	for y := 0; y < 9; y++ {
+
+		for n := 0; n < 9; n++ {
+
+			for x := 0; x < 9; x++ {
+
+				sumyx[n][x] = grid[y][x][n]
+				sumxy[n][x] = grid[x][y][n]
+			}
+		}
+		num1, num2 = 99, 99
+		//proveeka na sovpodenie
+		for x1 := 0; x1 < 9-1; x1++ {
+			if SumRow(sumyx[x1]) == 2 {
+
+				for x2 := x1 + 1; x2 < 9; x2++ {
+					if sumyx[x1] == sumyx[x2] {
+						//√ naideno
+
+						fmt.Printf("√yx y:%v\n%v\n%v\n\n", y, sumyx[x1], sumyx[x2])
+
+						for i := 0; i < 9; i++ {
+							if sumyx[x1][i] == 1 {
+								if num1 == 99 {
+									num1 = i
+								} else {
+									num2 = i
+									break
+								}
+							}
+						}
+						fmt.Print("\n", grid[y][x1], '\n', grid[y][x2], '\n')
+						for i := 0; i < 9; i++ {
+
+							if i != x1 && i != x2 {
+								grid[y][x1][i] = 0
+								grid[y][x2][i] = 0
+								//grid[y][X][10]=6
+							}
+
+						}
+
+						fmt.Print("\n", grid[y][x1], '\n', grid[y][x2], '\n')
+						fmt.Printf("num1:%v  num2:%v  x1:%v x2:%v", num1, num2, x1, x2)
+					}
+				}
+
+			}
+
+			//neuveren wto pravel'no
+			if SumRow(sumxy[x1]) == 2 {
+
+				for x2 := x1 + 1; x2 < 9; x2++ {
+					if sumxy[x1] == sumxy[x2] {
+						//√ naideno
+						fmt.Printf("\n\n√xy x:%v\n 1 2 3 4 5 6 7 8 9\n%v\n%v\n\n", y, sumxy[x1], sumxy[x2])
+
+						for i := 0; i < 9; i++ {
+							if sumxy[x1][i] == 1 {
+								if num1 == 99 {
+									num1 = i
+								} else {
+									num2 = i
+									break
+								}
+							}
+						}
+						fmt.Print("\n", grid[x1][y], '\n', grid[x2][y], '\n')
+						for i := 0; i < 9; i++ {
+
+							if i != x1 && i != x2 {
+								grid[x1][y][i] = 0
+								grid[x2][y][i] = 0
+								//grid[x][y][10]=6
+							}
+
+						}
+
+						fmt.Print("\n", grid[x1][y], '\n', grid[x2][y], '\n')
+						fmt.Printf("num1:%v  num2:%v  x1:%v x2:%v", num1, num2, x1, x2)
+					}
+				}
+			}
+		}
+	}
+}
+
 func Solvesudoku(unsolved [9][9]int) {
 	e := false
 	CanContinue := true
@@ -575,7 +676,7 @@ func Solvesudoku(unsolved [9][9]int) {
 		SolveOne(&grid, &CanContinue)
 
 		ErrorCheck(grid, &e)
-		//MetaCheck(grid, &e)
+		MetaCheck(grid, &e)
 		if e == true {
 			fmt.Println("ERRor")
 			break
@@ -583,7 +684,7 @@ func Solvesudoku(unsolved [9][9]int) {
 
 		SolveTwo(&grid, &CanContinue)
 
-		//MetaCheck(grid, &e)
+		MetaCheck(grid, &e)
 		ErrorCheck(grid, &e)
 		if e == true {
 			fmt.Println("ERRor")
@@ -592,13 +693,14 @@ func Solvesudoku(unsolved [9][9]int) {
 
 		SolveTwoCube(&grid, &CanContinue)
 		//PrintGrid(&grid)
-		//MetaCheck(grid, &e)
+		MetaCheck(grid, &e)
 		ErrorCheck(grid, &e)
 		if e == true {
 			fmt.Println("ERRor")
 			break
 		}
 
+		FullCellLine(&grid)
 	}
 
 	//PrintOnes(&grid, 2)
@@ -615,17 +717,30 @@ func Solvesudoku(unsolved [9][9]int) {
 func MetaCheck(grid [9][9][11]int, e *bool) {
 
 	MetaArray := [9][9]int{
-		{3, 8, 2, 1, 7, 5, 4, 9, 6},
-		{4, 7, 5, 3, 6, 9, 2, 1, 8},
-		{9, 1, 6, 2, 4, 8, 7, 5, 3},
 
-		{8, 9, 4, 6, 2, 7, 5, 3, 1},
-		{5, 2, 7, 8, 1, 3, 6, 4, 9},
-		{1, 6, 3, 5, 9, 4, 8, 2, 7},
+		{6, 2, 7, 4, 9, 1, 5, 8, 3},
+		{8, 4, 5, 7, 2, 3, 9, 1, 6},
+		{1, 3, 9, 8, 5, 6, 2, 7, 4},
 
-		{7, 3, 8, 4, 5, 1, 9, 6, 2},
-		{6, 5, 1, 9, 8, 2, 3, 7, 4},
-		{2, 4, 9, 7, 3, 6, 1, 8, 5}}
+		{3, 8, 6, 9, 1, 7, 4, 5, 2},
+		{5, 7, 1, 2, 3, 4, 6, 9, 8},
+		{4, 9, 2, 6, 8, 5, 1, 3, 7},
+
+		{2, 6, 3, 5, 7, 9, 8, 4, 1},
+		{7, 5, 4, 1, 6, 8, 3, 2, 9},
+		{9, 1, 8, 3, 4, 2, 7, 6, 5}}
+
+	// {3, 8, 2, 1, 7, 5, 4, 9, 6},
+	// {4, 7, 5, 3, 6, 9, 2, 1, 8},
+	// {9, 1, 6, 2, 4, 8, 7, 5, 3},
+
+	// {8, 9, 4, 6, 2, 7, 5, 3, 1},
+	// {5, 2, 7, 8, 1, 3, 6, 4, 9},
+	// {1, 6, 3, 5, 9, 4, 8, 2, 7},
+
+	// {7, 3, 8, 4, 5, 1, 9, 6, 2},
+	// {6, 5, 1, 9, 8, 2, 3, 7, 4},
+	// {2, 4, 9, 7, 3, 6, 1, 8, 5}}
 
 	for x := 0; x < 9; x++ {
 		for y := 0; y < 9; y++ {
