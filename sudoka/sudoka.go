@@ -592,7 +592,7 @@ func FullCellLine(grid *[9][9][11]int) {
 					if sumyx[x1] == sumyx[x2] {
 						//√ naideno
 
-						fmt.Printf("√yx y:%v\n%v\n%v\n\n", y, sumyx[x1], sumyx[x2])
+						fmt.Printf("√yx y:%v\n%v %v\n%v %v\n\n", y, sumyx[x1], grid[y][x1], sumyx[x2], grid[y][x2])
 
 						for i := 0; i < 9; i++ {
 							if sumyx[x1][i] == 1 {
@@ -604,7 +604,7 @@ func FullCellLine(grid *[9][9][11]int) {
 								}
 							}
 						}
-						fmt.Print("\n", grid[y][x1], '\n', grid[y][x2], '\n')
+						fmt.Print("\n", sumyx[x1], ' ', grid[y][x1], '\n', sumyx[x1], ' ', grid[y][x2], '\n')
 						for i := 0; i < 9; i++ {
 
 							if i != x1 && i != x2 {
@@ -628,7 +628,7 @@ func FullCellLine(grid *[9][9][11]int) {
 				for x2 := x1 + 1; x2 < 9; x2++ {
 					if sumxy[x1] == sumxy[x2] {
 						//√ naideno
-						fmt.Printf("\n\n√xy x:%v\n 1 2 3 4 5 6 7 8 9\n%v\n%v\n\n", y, sumxy[x1], sumxy[x2])
+						fmt.Printf("\n\n√xy x:%v\n   1 2 3 4 5 6 7 8 9\ns1%v gridx1%v\ns2%v gridx2%v\n\n", y, sumxy[x1], grid[x1][y], sumxy[x2], grid[x2][y])
 
 						for i := 0; i < 9; i++ {
 							if sumxy[x1][i] == 1 {
@@ -640,7 +640,7 @@ func FullCellLine(grid *[9][9][11]int) {
 								}
 							}
 						}
-						fmt.Print("\n", grid[x1][y], '\n', grid[x2][y], '\n')
+
 						for i := 0; i < 9; i++ {
 
 							if i != x1 && i != x2 {
@@ -651,7 +651,7 @@ func FullCellLine(grid *[9][9][11]int) {
 
 						}
 
-						fmt.Print("\n", grid[x1][y], '\n', grid[x2][y], '\n')
+						fmt.Printf("\ns1%v gridx1%v\ns2%v gridx2%v\n\n", sumxy[x1], grid[x1][y], sumxy[x2], grid[x2][y])
 						fmt.Printf("num1:%v  num2:%v  x1:%v x2:%v", num1, num2, x1, x2)
 					}
 				}
