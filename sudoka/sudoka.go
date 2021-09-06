@@ -116,6 +116,15 @@ func SumRow(row [9]int) int {
 	return sum
 }
 
+func SumGridRow(gridrow [11]int) int {
+	var sum int
+
+	for i := 0; i < 9; i++ {
+		sum += gridrow[i]
+	}
+	return sum
+}
+
 //3
 func GridInit(unsolved [9][9]int) [9][9][11]int {
 	dbg[0] = dbg[1]
@@ -364,6 +373,10 @@ func SetCell(grid *[9][9][11]int, Y int, X int) {
 		grid[i][X][SetThisNumZero] = 0
 		grid[Y][i][SetThisNumZero] = 0
 	}
+
+	fmt.Printf("\n8/6%v\t\t!!!\n9/6%v\n", grid[7][5], grid[8][5])
+	fmt.Printf("6/3%v\n", grid[6][3])
+	PrintGrid(&*grid)
 }
 
 //8
@@ -569,6 +582,7 @@ func ClearHidden(grid *[9][9][11]int) { //esli grid[3][1][4] && grid[3][2][4] ==
 }
 
 func FullCellLine(grid *[9][9][11]int) {
+	fmt.Println("SURPRISE")
 	var sumyx, sumxy [9][9]int
 	// var sumxy[9] int		REMOVE
 	var cell1, cell2 int
@@ -640,24 +654,25 @@ func FullCellLine(grid *[9][9][11]int) {
 						}
 
 						//√ naideno					//PS! gridn1 NEPRAVEL'no!?
-						fmt.Printf("\n\n|  1 2 3 4 5 6 7 8 9\t\t√xy x:%v\ns1%v%v gridn1%v\ns2%v%v gridn2%v\n\n", y, sumxy[n1], n1+1, grid[cell1][y], sumxy[n2], n2+1, grid[cell2][y])
+						// fmt.Printf("\n\n|  1 2 3 4 5 6 7 8 9\t\t√xy x:%v\ns1%v%v gridn1%v\ns2%v%v gridn2%v\n\n", y+1, sumxy[n1], n1+1, grid[cell1][y], sumxy[n2], n2+1, grid[cell2][y])
+						if !(grid[cell1][y] == grid[cell2][y] && SumGridRow(grid[cell1][y]) == 2) {
+							for i := 0; i < 9; i++ {
 
-						for i := 0; i < 9; i++ {
+								if i != n1 && i != n2 {
+									grid[cell1][y][i] = 0
+									grid[cell2][y][i] = 0
+									//grid[x][y][10]=6
+								}
 
-							if i != n1 && i != n2 {
-								grid[cell1][y][i] = 0
-								grid[cell2][y][i] = 0
-								//grid[x][y][10]=6
 							}
-
 						}
 
-						fmt.Printf("\ns1%v gridn1%v\ns2%v gridn2%v\n\n", sumxy[n1], grid[cell1][y], sumxy[n2], grid[cell2][y])
-						fmt.Printf("cell1:%v  cell2:%v  n1:%v n2:%v", cell1+1, cell2+1, n1+1, n2+1)
+						// fmt.Printf("\ns1%v gridn1%v\ns2%v gridn2%v\n\n", sumxy[n1], grid[cell1][y], sumxy[n2], grid[cell2][y])
+						// fmt.Printf("cell1:%v  cell2:%v  n1:%v n2:%v", cell1+1, cell2+1, n1+1, n2+1)
 					}
 				}
-				fmt.Println()
-				PrintGrid(&*grid)
+				//fmt.Println()
+				//PrintGrid(&*grid)
 			}
 		}
 	}
@@ -670,7 +685,6 @@ func Solvesudoku(unsolved [9][9]int) {
 
 	ErrorCheck(grid, &e)
 	grid = LineCheck(grid)
-	//PrintGrid(&grid)
 
 	for CanContinue {
 		CanContinue = false
@@ -695,15 +709,15 @@ func Solvesudoku(unsolved [9][9]int) {
 		}
 
 		SolveTwoCube(&grid, &CanContinue)
-		//PrintGrid(&grid)
+
 		MetaCheck(grid, &e)
 		ErrorCheck(grid, &e)
 		if e == true {
 			fmt.Println("ERRor")
 			break
 		}
-
 		FullCellLine(&grid)
+
 	}
 
 	//PrintOnes(&grid, 2)
@@ -750,7 +764,7 @@ func MetaCheck(grid [9][9][11]int, e *bool) {
 			if grid[x][y][9] != 9 {
 				if grid[x][y][9] != MetaArray[x][y]-1 {
 					*e = true
-					fmt.Printf("%v != MetaArray[%v][%v](%v)\tRIP\n", grid[x][y][9]+1, x, y, MetaArray[x][y])
+					fmt.Printf("%v != MetaArray[%v][%v](%v)\tRIP\n", grid[x][y][9]+1, x+1, 1+y, MetaArray[x][y])
 				}
 			}
 		}
