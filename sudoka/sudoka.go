@@ -570,8 +570,8 @@ func ClearHidden(grid *[9][9][11]int) { //esli grid[3][1][4] && grid[3][2][4] ==
 
 func FullCellLine(grid *[9][9][11]int) {
 	var sumyx, sumxy [9][9]int
-	// var sumxy[9] int
-	var num1, num2 int
+	// var sumxy[9] int		REMOVE
+	var cell1, cell2 int
 
 	for y := 0; y < 9; y++ {
 
@@ -579,82 +579,85 @@ func FullCellLine(grid *[9][9][11]int) {
 
 			for x := 0; x < 9; x++ {
 
-				sumyx[n][x] = grid[y][x][n]
-				sumxy[n][x] = grid[x][y][n]
+				sumyx[n][x] = grid[y][x][n] //grid[y][x][n] => esli 1 to v kletke mozhet bit' cifra 'n'
+				sumxy[n][x] = grid[x][y][n] //sum_[n][x] => esli 1 to cifra 'n' nahoditsa kakih kletkah
 			}
 		}
-		num1, num2 = 99, 99
+		cell1, cell2 = 99, 99
 		//proveeka na sovpodenie
-		for x1 := 0; x1 < 9-1; x1++ {
-			if SumRow(sumyx[x1]) == 2 {
+		for n1 := 0; n1 < 9-1; n1++ {
+			/*	if SumRow(sumyx[n1]) == 2 { //POstrochno ----
 
-				for x2 := x1 + 1; x2 < 9; x2++ {
-					if sumyx[x1] == sumyx[x2] {
+				for n2 := n1 + 1; n2 < 9; n2++ {
+					if sumyx[n1] == sumyx[n2] {
 						//√ naideno
 
-						fmt.Printf("√yx y:%v\n%v %v\n%v %v\n\n", y, sumyx[x1], grid[y][x1], sumyx[x2], grid[y][x2])
+						fmt.Printf("√yx y:%v\n%v %v\n%v %v\n\n", y, sumyx[n1], grid[y][n1], sumyx[n2], grid[y][n2])
 
 						for i := 0; i < 9; i++ {
-							if sumyx[x1][i] == 1 {
-								if num1 == 99 {
-									num1 = i
+							if sumyx[n1][i] == 1 {
+								if cell1 == 99 {
+									cell1 = i
 								} else {
-									num2 = i
+									cell2 = i
 									break
 								}
 							}
 						}
-						fmt.Print("\n", sumyx[x1], ' ', grid[y][x1], '\n', sumyx[x1], ' ', grid[y][x2], '\n')
+						fmt.Print("\n", sumyx[n1], ' ', grid[y][n1], '\n', sumyx[n1], ' ', grid[y][n2], '\n')
 						for i := 0; i < 9; i++ {
 
-							if i != x1 && i != x2 {
-								grid[y][x1][i] = 0
-								grid[y][x2][i] = 0
+							if i != n1 && i != n2 {
+								grid[y][cell1][i] = 0
+								grid[y][cell2][i] = 0
 								//grid[y][X][10]=6
 							}
 
 						}
 
-						fmt.Print("\n", grid[y][x1], '\n', grid[y][x2], '\n')
-						fmt.Printf("num1:%v  num2:%v  x1:%v x2:%v", num1, num2, x1, x2)
+						fmt.Print("\n", grid[y][n1], '\n', grid[y][n2], '\n')
+						fmt.Printf("cell1:%v  cell2:%v  n1:%v n2:%v", cell1, cell2, n1, n2)
 					}
 				}
 
-			}
-
+			}*/
+			//ispravit' verhnuju po (takzhe kak nizhe)
 			//neuveren wto pravel'no
-			if SumRow(sumxy[x1]) == 2 {
+			if SumRow(sumxy[n1]) == 2 { // ||| po ryadam
 
-				for x2 := x1 + 1; x2 < 9; x2++ {
-					if sumxy[x1] == sumxy[x2] {
-						//√ naideno
-						fmt.Printf("\n\n√xy x:%v\n   1 2 3 4 5 6 7 8 9\ns1%v gridx1%v\ns2%v gridx2%v\n\n", y, sumxy[x1], grid[x1][y], sumxy[x2], grid[x2][y])
+				for n2 := n1 + 1; n2 < 9; n2++ {
+					if sumxy[n1] == sumxy[n2] {
 
-						for i := 0; i < 9; i++ {
-							if sumxy[x1][i] == 1 {
-								if num1 == 99 {
-									num1 = i
+						for i := 0; i < 9; i++ { //basically i == x
+							if sumxy[n1][i] == 1 {
+								if cell1 == 99 {
+									cell1 = i
 								} else {
-									num2 = i
+									cell2 = i
 									break
 								}
 							}
 						}
 
+						//√ naideno					//PS! gridn1 NEPRAVEL'no!?
+						fmt.Printf("\n\n|  1 2 3 4 5 6 7 8 9\t\t√xy x:%v\ns1%v%v gridn1%v\ns2%v%v gridn2%v\n\n", y, sumxy[n1], n1+1, grid[cell1][y], sumxy[n2], n2+1, grid[cell2][y])
+
 						for i := 0; i < 9; i++ {
 
-							if i != x1 && i != x2 {
-								grid[x1][y][i] = 0
-								grid[x2][y][i] = 0
+							if i != n1 && i != n2 {
+								grid[cell1][y][i] = 0
+								grid[cell2][y][i] = 0
 								//grid[x][y][10]=6
 							}
 
 						}
 
-						fmt.Printf("\ns1%v gridx1%v\ns2%v gridx2%v\n\n", sumxy[x1], grid[x1][y], sumxy[x2], grid[x2][y])
-						fmt.Printf("num1:%v  num2:%v  x1:%v x2:%v", num1, num2, x1, x2)
+						fmt.Printf("\ns1%v gridn1%v\ns2%v gridn2%v\n\n", sumxy[n1], grid[cell1][y], sumxy[n2], grid[cell2][y])
+						fmt.Printf("cell1:%v  cell2:%v  n1:%v n2:%v", cell1+1, cell2+1, n1+1, n2+1)
 					}
 				}
+				fmt.Println()
+				PrintGrid(&*grid)
 			}
 		}
 	}
