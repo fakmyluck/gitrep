@@ -3,18 +3,31 @@ package main
 import "fmt"
 
 var dbg [3]int
+var color bool=false
 
 func PrintGrid(grid *[9][9][11]int) {
 
-	colorReset := "\033[0m"
 
-	colorRed := "\033[31m"
-	colorGreen := "\033[32m"
-	colorYellow := "\033[33m"
-	colorBlue := "\033[34m"
-	colorPurple := "\033[35m"
-	colorCyan := "\033[36m"
-	colorWhite := "\033[37m"
+colorReset := ""
+
+	colorRed := ""
+	colorGreen := ""
+	colorYellow := ""
+	colorBlue := ""
+	colorPurple := ""
+	colorCyan := ""
+	colorWhite := ""
+if color{
+	colorReset = "\033[0m"
+
+	colorRed = "\033[31m"
+	colorGreen = "\033[32m"
+	colorYellow = "\033[33m"
+	colorBlue = "\033[34m"
+	colorPurple = "\033[35m"
+	colorCyan = "\033[36m"
+	colorWhite = "\033[37m"
+}
 
 	for y, grid_row := range grid {
 		if y%3 == 0 && y != 0 {
@@ -57,8 +70,14 @@ func PrintGrid(grid *[9][9][11]int) {
 				grid[y][x][10] -= 20
 			}
 
+
+if grid[y][x][10]==18 || grid[y][x][10]==19{
+    fmt.Print(" √")
+    grid[y][x][10]=0
+}else{
 			fmt.Printf(" %v", string(grid_column[9]+1+'0'))
 
+}
 			fmt.Print(colorReset)
 		}
 
@@ -85,11 +104,11 @@ func MinusOne(grid [9][9]int) [9][9]int {
 	return grid
 }
 
-//2
+//!2reserved
 func Returnifone(posibl [11]int) int { // nahodit' edinstvenniy "1"
-	dbg[0] = dbg[1]
+	/*dbg[0] = dbg[1]
 	dbg[1] = dbg[2]
-	dbg[2] = 2
+	dbg[2] = 2*/
 
 	sum := 0
 	n := 9
@@ -116,6 +135,7 @@ func SumRow(row [9]int) int {
 	return sum
 }
 
+//pereiminovat! SumCell
 func SumGridRow(gridrow [11]int) int {
 	var sum int
 
@@ -148,49 +168,50 @@ func GridInit(unsolved [9][9]int) [9][9][11]int {
 	return grid
 }
 
-func ErrorCheck(grid [9][9][11]int, e *bool) {
-	var sumX, sumY [9]int
-	var dbg_string [3]string
-
-	for n := 0; n < 3; n++ {
-		switch dbg[n] {
+func ProgName(num int)string{
+   var prog_name string
+   
+    switch num {
 		case 1:
-			dbg_string[n] = "MinusOne"
+		prog_name= "MinusOne"
 
 		case 2:
-			dbg_string[n] = "Returnifone"
+			prog_name = "Reserved"
 
 		case 3:
-			dbg_string[n] = "GridInit"
+			prog_name = "GridInit"
 
 		case 4:
-			dbg_string[n] = "LineCheck"
+			prog_name = "LineCheck"
 
 		case 5:
-			dbg_string[n] = "SquareCheck"
+			prog_name = "SquareCheck"
 
 		case 6:
-			dbg_string[n] = "PrintOnes"
+			prog_name= "PrintOnes"
 		case 7:
-			dbg_string[n] = "SetCell"
+			prog_name = "Reserved"
 
 		case 8:
-			dbg_string[n] = "SolveOne"
+			prog_name = "SolveOne"
 
 		case 9:
-			dbg_string[n] = "SolveTwo"
+			prog_name = "SolveTwo"
 
 		case 10:
-			dbg_string[n] = "SolveCube"
+			prog_name = "SolveCube"
 
 		case 11:
-			dbg_string[n] = "ClearHidden"
+			prog_name = "ClearHidden"
 
 		default:
-			dbg_string[n] = "!!ErrorErrora!!"
+			prog_name = "!!ErrorErrora!!"
 		}
+		return prog_name
+}
 
-	}
+func ErrorCheck(grid [9][9][11]int, e *bool) {
+	var sumX, sumY [9]int
 
 	for Y := 0; Y < 9; Y++ {
 		for X := 0; X < 9; X++ {
@@ -209,7 +230,7 @@ func ErrorCheck(grid [9][9][11]int, e *bool) {
 			if sumX[i] > 1 || sumY[i] > 1 { // proverit' CHE S ETIM??
 				fmt.Printf("\nERROR dupe+! i=%v  sumX=%v  sumY=%v\n", i, sumX[i], sumY[i])
 
-				fmt.Println("2prev func: ", dbg_string[0], "\n1prev func: ", dbg_string[1], "\nError func: ", dbg_string[2])
+				fmt.Println("2prev func: ", ProgName(dbg[0]), "\n1prev func: ", ProgName(dbg[1]), "\nError func: ", ProgName(dbg[2]))
 				*e = true
 				PrintGrid(&grid)
 			}
@@ -231,7 +252,7 @@ func ErrorCheck(grid [9][9][11]int, e *bool) {
 						sumX[grid[zi][ci][9]] += 1
 						if sumX[grid[zi][ci][9]] > 1 {
 							fmt.Printf("\nERROR dupe [kvadrat] num:%v %v/%v \n", grid[zi][ci][9]+1, base_Z/3, base_C/3)
-							fmt.Println("2prev func: ", dbg_string[0], "\n1prev func: ", dbg_string[1], "\nError func: ", dbg_string[2])
+							fmt.Println("2prev func: ", ProgName(dbg[0]), "\n1prev func: ", ProgName(dbg[1]), "\nError func: ", ProgName(dbg[2]))
 							*e = true
 							PrintGrid(&grid)
 						}
@@ -243,6 +264,17 @@ func ErrorCheck(grid [9][9][11]int, e *bool) {
 			}
 		}
 	}
+	
+	//proverka jacheek na 0
+	for Y := 0; Y < 9; Y++ {
+		for X := 0; X < 9; X++ {
+		    if SumGridRow(grid [Y][X])==0 && grid [Y][X][9]==9{
+		    fmt.Printf("\nERROR pustaja jacheyka Summ[0:9]=0 %v/%v\n", Y+1, X+1)
+							fmt.Println("2prev func: ", ProgName(dbg[0]), "\n1prev func: ", ProgName(dbg[1]), "\nError func: ", ProgName(dbg[2]))
+							*e = true
+							}
+		    }
+		   }
 }
 
 //4
@@ -354,11 +386,14 @@ func PrintOnes(grid *[9][9][11]int, a int) {
 
 }
 
-//7
+//!7 dbg reserved
 func SetCell(grid *[9][9][11]int, Y int, X int) {
+    /*
 	dbg[0] = dbg[1]
 	dbg[1] = dbg[2]
 	dbg[2] = 7
+	*/
+
 
 	SetThisNumZero := grid[Y][X][9]
 
@@ -376,6 +411,8 @@ func SetCell(grid *[9][9][11]int, Y int, X int) {
 
 	fmt.Printf("\n8/6%v\t\t!!!\n9/6%v\n", grid[7][5], grid[8][5])
 	fmt.Printf("6/3%v\n", grid[6][3])
+	fmt.Printf("8/8%v2\n", grid[7][7])
+	fmt.Println(SetThisNumZero+1)
 	PrintGrid(&*grid)
 }
 
@@ -639,6 +676,9 @@ func FullCellLine(grid *[9][9][11]int) {
 			//neuveren wto pravel'no
 			if SumRow(sumxy[n1]) == 2 { // ||| po ryadam
 
+fmt.Println(" 1 2 3 4 5 6 7 8 9")
+fmt.Println(grid[n1][y])
+fmt.Println(grid[n2][y])
 				for n2 := n1 + 1; n2 < 9; n2++ {
 					if sumxy[n1] == sumxy[n2] {
 
@@ -656,16 +696,34 @@ func FullCellLine(grid *[9][9][11]int) {
 						//√ naideno					//PS! gridn1 NEPRAVEL'no!?
 						// fmt.Printf("\n\n|  1 2 3 4 5 6 7 8 9\t\t√xy x:%v\ns1%v%v gridn1%v\ns2%v%v gridn2%v\n\n", y+1, sumxy[n1], n1+1, grid[cell1][y], sumxy[n2], n2+1, grid[cell2][y])
 						if !(grid[cell1][y] == grid[cell2][y] && SumGridRow(grid[cell1][y]) == 2) {
+						    
+						    //DEBUG
+						    fmt.Printf("n1:%v  n2:%v\n",n1+1,1+n2)
+						    grid[cell1][y][10]=19
+						    grid[cell2][y][10]=18
+						    
+						    PrintGrid(&*grid)
 							for i := 0; i < 9; i++ {
 
 								if i != n1 && i != n2 {
 									grid[cell1][y][i] = 0
 									grid[cell2][y][i] = 0
 									//grid[x][y][10]=6
+									
+									//DEBUG
+									if (cell1==7||cell2==7)&&y==7&&i==1{
+									    fmt.Printf("\n err. \nn1:%v\nn2:%v\ncell1:%v\ncell2:%v\n",n1+1,n2+1,cell1+1,cell2+1)
+									}
 								}
 
 							}
+							
 						}
+						
+						fmt.Println(" 1 2 3 4 5 6 7 8 9")
+fmt.Println(grid[n1][y])
+fmt.Println(grid[n2][y])
+						
 
 						// fmt.Printf("\ns1%v gridn1%v\ns2%v gridn2%v\n\n", sumxy[n1], grid[cell1][y], sumxy[n2], grid[cell2][y])
 						// fmt.Printf("cell1:%v  cell2:%v  n1:%v n2:%v", cell1+1, cell2+1, n1+1, n2+1)
@@ -716,7 +774,8 @@ func Solvesudoku(unsolved [9][9]int) {
 			fmt.Println("ERRor")
 			break
 		}
-		FullCellLine(&grid)
+FullCellLine(&grid)
+
 
 	}
 
