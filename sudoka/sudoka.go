@@ -676,11 +676,11 @@ func FullCellLine(grid *[9][9][11]int) {
 			//neuveren wto pravel'no
 			if SumRow(sumxy[n1]) == 2 { // ||| po ryadam
 
-fmt.Println(" 1 2 3 4 5 6 7 8 9")
-fmt.Println(grid[n1][y])
-fmt.Println(grid[n2][y])
+
 				for n2 := n1 + 1; n2 < 9; n2++ {
 					if sumxy[n1] == sumxy[n2] {
+
+
 
 						for i := 0; i < 9; i++ { //basically i == x
 							if sumxy[n1][i] == 1 {
@@ -698,11 +698,13 @@ fmt.Println(grid[n2][y])
 						if !(grid[cell1][y] == grid[cell2][y] && SumGridRow(grid[cell1][y]) == 2) {
 						    
 						    //DEBUG
-						    fmt.Printf("n1:%v  n2:%v\n",n1+1,1+n2)
+						    fmt.Println("   1 2 3 4 5 6 7 8 9")
+fmt.Println(n1+1,grid[cell1][y])
+fmt.Println(n2+1,grid[cell2][y])
 						    grid[cell1][y][10]=19
 						    grid[cell2][y][10]=18
 						    
-						    PrintGrid(&*grid)
+						    
 							for i := 0; i < 9; i++ {
 
 								if i != n1 && i != n2 {
@@ -720,9 +722,10 @@ fmt.Println(grid[n2][y])
 							
 						}
 						
-						fmt.Println(" 1 2 3 4 5 6 7 8 9")
-fmt.Println(grid[n1][y])
-fmt.Println(grid[n2][y])
+						fmt.Println("--")
+fmt.Println(n1+1,grid[cell1][y])
+fmt.Println(n2+1,grid[cell2][y])
+PrintGrid(&*grid)
 						
 
 						// fmt.Printf("\ns1%v gridn1%v\ns2%v gridn2%v\n\n", sumxy[n1], grid[cell1][y], sumxy[n2], grid[cell2][y])
