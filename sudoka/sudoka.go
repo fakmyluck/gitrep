@@ -64,6 +64,10 @@ func PrintGrid(grid *[9][9][11]int) {
 				//grid[y][x][10] = 2
 			}
 
+			// if grid_column[10] == 6 { // UDALIT' (OSTATOK OT ot clearhidden)
+			// 	fmt.Print(colorRed)
+			// }
+
 			if grid_column[10] > 20 { //	|
 				fmt.Print(colorRed)
 				grid[y][x][10] -= 20
@@ -126,13 +130,21 @@ func Returnifone(posibl [11]int) int { // nahodit' edinstvenniy "1"
 	return n
 }
 
-func SumRow(row [9]int) int {
+func SumRow(row [9]int) (int, [2]int) {
 	var sum int
-
-	for _, num := range row {
+	var nX [2]int
+	for i, num := range row {
+		if num == 1 {
+			if sum < 2 {
+				nX[sum] = i
+			} else {
+				return 3, nX //failed
+			}
+		}
 		sum += num
+
 	}
-	return sum
+	return sum, nX
 }
 
 //pereiminovat! SumCell
@@ -388,11 +400,6 @@ func PrintOnes(grid *[9][9][11]int, a int) {
 
 //!7 dbg reserved
 func SetCell(grid *[9][9][11]int, Y int, X int) {
-	/*
-		dbg[0] = dbg[1]
-		dbg[1] = dbg[2]
-		dbg[2] = 7
-	*/
 
 	SetThisNumZero := grid[Y][X][9]
 
@@ -408,9 +415,8 @@ func SetCell(grid *[9][9][11]int, Y int, X int) {
 		grid[Y][i][SetThisNumZero] = 0
 	}
 
-	fmt.Printf("\n8/6%v\t\t!!!\n9/6%v\n", grid[7][5], grid[8][5])
-	fmt.Printf("6/3%v\n", grid[6][3])
-	fmt.Printf("8/8%v2\n", grid[7][7])
+	fmt.Println(">", ProgName(dbg[2]), "< --> ", ProgName(dbg[1]), " -> ", ProgName(dbg[0]))
+
 	fmt.Println(SetThisNumZero + 1)
 	PrintGrid(&*grid)
 }
@@ -595,7 +601,7 @@ func ClearHidden(grid *[9][9][11]int) { //esli grid[3][1][4] && grid[3][2][4] ==
 					for i := 0; i < 9; i++ {
 						if i < base_x || i > base_x+2 {
 							grid[yck][i][cnum] = 0
-							grid[yck][i][10] = 6 //debug
+							//	grid[yck][i][10] = 6 //debug
 						}
 					}
 					//PrintOnes(grid, cnum)
@@ -605,7 +611,7 @@ func ClearHidden(grid *[9][9][11]int) { //esli grid[3][1][4] && grid[3][2][4] ==
 					for i := 0; i < 9; i++ {
 						if i < base_y || i > base_y+2 {
 							grid[i][xck][cnum] = 0
-							grid[i][xck][10] = 6 //debug
+							//	grid[i][xck][10] = 6 //debug
 						}
 					}
 					//PrintOnes(grid, cnum)
@@ -619,96 +625,61 @@ func ClearHidden(grid *[9][9][11]int) { //esli grid[3][1][4] && grid[3][2][4] ==
 
 func FullCellLine(grid *[9][9][11]int) {
 	fmt.Println("FullCellLine :start")
-	var sumxy [9][9]int /*sumyx,*/
+	//var sumxy [9][9]int /*sumyx,*/
+	var cifra_n_v_kletkah_Y, cifra_n_v_kletkah_X [9][9]int
 	// var sumxy[9] int		REMOVE
-	var cell1, cell2 int
-
+	var sumrowtmp int
+	var cell [2]int
 	for y := 0; y < 9; y++ {
 
 		for n := 0; n < 9; n++ {
 
 			for x := 0; x < 9; x++ {
+				cifra_n_v_kletkah_Y[n][x] = grid[y][x][n] //po gorizontale	-----
 
-				//	sumyx[n][x] = grid[y][x][n] //grid[y][x][n] => esli 1 to v kletke mozhet bit' cifra 'n'
-				sumxy[n][x] = grid[x][y][n] //sum_[n][x] => esli 1 to cifra 'n' nahoditsa kakih kletkah
+				//esli ERROR UDALIT'
+				cifra_n_v_kletkah_X[n][x] = grid[x][y][n] //po vertikale ||
 			}
 		}
-		cell1, cell2 = 99, 99
-		//proveeka na sovpodenie
-		for n1 := 0; n1 < 9-1; n1++ {
 
-			//ispravit' verhnuju po (takzhe kak nizhe)
-			//neuveren wto pravel'no
-			if SumRow(sumxy[n1]) == 2 { // ||| po ryadam
+		for n1 := 0; n1 < 9-1; n1++ { //poisk pervoi cifri ---------------
 
-				for n2 := n1 + 1; n2 < 9; n2++ {
-					if sumxy[n1] == sumxy[n2] {
+			sumrowtmp, cell = SumRow(cifra_n_v_kletkah_Y[n1])
 
-						for i := 0; i < 9; i++ { //basically i == x
-							if sumxy[n1][i] == 1 {
-								if cell1 == 99 {
-									cell1 = i
-								} else {
-									cell2 = i
-									break
-								}
+			if sumrowtmp == 2 { //est' kontakt
+
+				for n2 := n1 + 1; n2 < 9; n2++ { //poisk vtoroy cifri
+
+					if cifra_n_v_kletkah_Y[n1] == cifra_n_v_kletkah_Y[n2] { // NAIDENO SOVPADENIE
+
+						for i := 0; i < 9; i++ {
+							if i != n1 && i != n2 {
+								grid[y][cell[0]][i] = 0
+								grid[y][cell[1]][i] = 0
 							}
 						}
-
-						//√ naideno					//PS! gridn1 NEPRAVEL'no!?
-						// fmt.Printf("\n\n|  1 2 3 4 5 6 7 8 9\t\t√xy x:%v\ns1%v%v gridn1%v\ns2%v%v gridn2%v\n\n", y+1, sumxy[n1], n1+1, grid[cell1][y], sumxy[n2], n2+1, grid[cell2][y])
-						if !(grid[cell1][y] == grid[cell2][y] && SumGridRow(grid[cell1][y]) == 2) {
-
-							//DEBUG
-							fmt.Printf("   1 2 3 4 5 6 7 8 9\t(%v,%v)\n", n1+1, n2+1)
-							fmt.Printf("c%v%v\n", cell1+1, grid[cell1][y])
-							fmt.Printf("c%v%v\n", cell2+1, grid[cell2][y])
-							grid[cell1][y][10] = 19
-							grid[cell2][y][10] = 18
-
-							//debug
-							if n1 == 4 && n2 == 8 {
-								fmt.Println()
-								for i := 0; i < 9; i++ {
-									if grid[i][7][9] == 9 {
-										fmt.Printf("%vy-%v\n", i+1, grid[i][7])
-									} else {
-										//	fmt.Printf("%v-%v\n", i+1, 1+grid[i][7][9])
-									}
-								}
-
-								fmt.Printf("  %v %v mozhet stajat' v etih kletkah\n", sumxy[n1], n1+1)
-								fmt.Printf("  %v %v mozhet stajat' v etih kletkah\n", sumxy[n2], n2+1)
-							}
-
-							for i := 0; i < 9; i++ {
-
-								if i != n1 && i != n2 {
-									grid[cell1][y][i] = 0
-									grid[cell2][y][i] = 0
-									//grid[x][y][10]=6
-
-									//DEBUG
-									if (cell1 == 7 || cell2 == 7) && y == 7 && i == 1 {
-										fmt.Printf("\n err. \nn1:%v\nn2:%v\ncell1:%v\ncell2:%v\n", n1+1, n2+1, cell1+1, cell2+1)
-									}
-								}
-
-							}
-
-						}
-
-						fmt.Println("--")
-						fmt.Println(cell1+1, grid[cell1][y])
-						fmt.Println(cell2+1, grid[cell2][y])
-						PrintGrid(&*grid)
-
-						// fmt.Printf("\ns1%v gridn1%v\ns2%v gridn2%v\n\n", sumxy[n1], grid[cell1][y], sumxy[n2], grid[cell2][y])
-						// fmt.Printf("cell1:%v  cell2:%v  n1:%v n2:%v", cell1+1, cell2+1, n1+1, n2+1)
 					}
 				}
-				//fmt.Println()
-				//PrintGrid(&*grid)
+			}
+		}
+
+		for n1 := 0; n1 < 9-1; n1++ { //poisk pervoi cifri ||
+			sumrowtmp, cell = SumRow(cifra_n_v_kletkah_X[n1])
+
+			if sumrowtmp == 2 { //est' kontakt
+
+				for n2 := n1 + 1; n2 < 9; n2++ { //poisk vtoroy cifri
+
+					if cifra_n_v_kletkah_X[n1] == cifra_n_v_kletkah_X[n2] { // NAIDENO SOVPADENIE
+
+						for i := 0; i < 9; i++ {
+							if i != n1 && i != n2 {
+								grid[cell[0]][y][i] = 0
+								grid[cell[1]][y][i] = 0
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -727,7 +698,6 @@ func Solvesudoku(unsolved [9][9]int) {
 		ClearHidden(&grid)
 
 		SolveOne(&grid, &CanContinue)
-
 		ErrorCheck(grid, &e)
 		MetaCheck(grid, &e)
 		if e == true {
@@ -736,7 +706,6 @@ func Solvesudoku(unsolved [9][9]int) {
 		}
 
 		SolveTwo(&grid, &CanContinue)
-
 		MetaCheck(grid, &e)
 		ErrorCheck(grid, &e)
 		if e == true {
@@ -745,13 +714,13 @@ func Solvesudoku(unsolved [9][9]int) {
 		}
 
 		SolveTwoCube(&grid, &CanContinue)
-
 		MetaCheck(grid, &e)
 		ErrorCheck(grid, &e)
 		if e == true {
 			fmt.Println("ERRor")
 			break
 		}
+
 		FullCellLine(&grid)
 		MetaCheck(grid, &e)
 		ErrorCheck(grid, &e)
@@ -762,14 +731,14 @@ func Solvesudoku(unsolved [9][9]int) {
 	}
 
 	//PrintOnes(&grid, 2)
-	/*
-		ErrorCheck(grid, &e)
 
-		fmt.Println()
-		fmt.Println()
-		PrintGrid(&grid)
-		fmt.Println()
-	*/
+	ErrorCheck(grid, &e)
+
+	fmt.Println()
+	fmt.Println()
+	PrintGrid(&grid)
+	fmt.Println()
+
 }
 
 func MetaCheck(grid [9][9][11]int, e *bool) {
@@ -811,7 +780,7 @@ func MetaCheck(grid [9][9][11]int, e *bool) {
 				*e = true
 				fmt.Println("MetaArray ERROR")
 				grid[x][y][10] = 17
-				PrintGrid(&grid)
+				// PrintGrid(&grid)
 			}
 		}
 	}
