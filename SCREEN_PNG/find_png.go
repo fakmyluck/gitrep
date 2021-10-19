@@ -22,16 +22,21 @@ func main() {
 		fmt.Println(err)
 	}
 
-	RAWscr, err = os.Open("0.png")
-	if err != nil {
-		fmt.Println(err)
-	}
+	var numPrime [12]image.Image
+	var num [12]*image.RGBA
+	for n := '0'; n <= '9'; n++ {
 
-	numPrime, _, err := image.Decode(RAWscr)
-	if err != nil {
-		fmt.Println(err)
-	}
+		RAWscr, err = os.Open(string(n) + ".png")
+		if err != nil {
+			fmt.Println(err)
+		}
 
+		numPrime[n], _, err = image.Decode(RAWscr)
+		if err != nil {
+			fmt.Println(err)
+		}
+		num[n] = numPrime[n].(*image.RGBA)
+	}
 	// switch num0.(type) {
 	// case *image.RGBA:
 	// 	fmt.Println("RGBA")
@@ -43,7 +48,6 @@ func main() {
 	//Scr.At(x+nx, y+ny)
 
 	Scr := MainScr.(*image.RGBA)
-	num0 := numPrime.(*image.NRGBA)
 
 	sDy, sDx := Scr.Rect.Dy(), Scr.Rect.Dx()
 	Dy, Dx := num0.Bounds().Dy(), num0.Bounds().Dx()
