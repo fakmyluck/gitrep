@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"image"
-	_ "image/png" // Register JPEG format
-
-	// Register PNG  format
-	"log"
+	"image/color"
+	"image/png"
+	_ "image/png"
 	"os"
 )
 
@@ -14,41 +13,119 @@ func main() {
 
 	RAWscr, err := os.Open("tstsmple.png")
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(err)
 	}
 	defer RAWscr.Close()
 
-	num0, err := os.Open("0.png")
+	MainScr, _, err := image.Decode(RAWscr)
 	if err != nil {
-		log.Fatalln(err)
-	}
-	defer num0.Close()
-
-	_, frm, err := image.Decode(RAWscr)
-	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(err)
 	}
 
-	fmt.Println(frm)
-	/*
-		for y := 0; y < MainScr.Bounds().Dy(); y++ {
-			for x := 0; x < MainScr.Bounds().Dx(); x++ {
+	RAWscr, err = os.Open("0.png")
+	if err != nil {
+		fmt.Println(err)
+	}
 
-				if x >= MainScr.Bounds().Dx()-num0.Bounds().Dx(){
-					break
-				}
+	numPrime, _, err := image.Decode(RAWscr)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-				SearchNum(y,x,M)
+	// switch num0.(type) {
+	// case *image.RGBA:
+	// 	fmt.Println("RGBA")
+	// 	// i in an *image.RGBA
+	// case *image.NRGBA:
+	// 	fmt.Println("nRGBA")
+	// 	// i in an *image.NRBGA
+	// }
+	//Scr.At(x+nx, y+ny)
 
+	Scr := MainScr.(*image.RGBA)
+	num0 := numPrime.(*image.NRGBA)
 
-			}
+	sDy, sDx := Scr.Rect.Dy(), Scr.Rect.Dx()
+	Dy, Dx := num0.Bounds().Dy(), num0.Bounds().Dx()
 
-			if x >= MainScr.Bounds().Dy()-num0.Bounds().Dy(){
+	for y := 0; y < sDy; y++ {
+		if y >= sDy-num0.Bounds().Dy() {
+			break
+		}
+
+		for x := 0; x < sDx; x++ {
+
+			if x >= sDx-num0.Bounds().Dx() {
 				break
 			}
 
-		}*/
-	//fmt.Println(MainScr)
-}
+			for ny := 0; ny < Dy; ny++ {
+				for nx := 0; nx < Dx; nx++ {
+					if num0.At(nx, ny) != Scr.At(x+nx, y+ny) {
+						//	fmt.Printf("failed at: %v, %v\n", x, y)
+						goto skipSETRGBA
+					}
+				}
+			}
 
-//func (p *)
+			fmt.Println("Success!")
+			for zy := 0; zy < Dy; zy++ {
+				Scr.SetRGBA(x+0, y+zy, color.RGBA{0, 255, 0, 255})
+				Scr.SetRGBA(x+Dx-1, y+zy, color.RGBA{0, 255, 0, 255})
+			}
+
+			for zx := 0; zx < Dx; zx++ {
+				Scr.SetRGBA(x+zx, y+0, color.RGBA{0, 255, 0, 255})
+				Scr.SetRGBA(x+zx, y+Dy-1, color.RGBA{0, 255, 0, 255})
+			}
+		skipSETRGBA:
+		}
+
+	}
+
+	// //	fmt.Println(MainScr.At(0, 0))
+	// Scr.SetRGBA(0, 0, color.RGBA{0, 255, 0, 255})
+	// Scr.SetRGBA(0, 1, color.RGBA{0, 255, 0, 255})
+	// Scr.SetRGBA(0, 2, color.RGBA{0, 255, 0, 255})
+	// Scr.SetRGBA(0, 3, color.RGBA{0, 255, 0, 255})
+	// Scr.SetRGBA(1, 1, color.RGBA{0, 255, 0, 255})
+	// Scr.SetRGBA(2, 1, color.RGBA{0, 255, 0, 255})
+	// Scr.SetRGBA(3, 1, color.RGBA{0, 255, 0, 255})
+	// Scr.SetRGBA(75, 75, color.RGBA{3, 3, 3, 255})
+	// //	fmt.Println(MainScr.At(0, 0))
+
+	// for y := 0; y < 10; y++ {
+
+	// 	for zy := 0; zy < Dy; zy++ {
+	// 		for zx := 0; zx < Dx; zx++ {
+	// 			if num0.At(zx, zy) != Scr.At(zx, zy+y) {
+	// 				fmt.Printf("F %v\t%v\n", num0.At(zx, zy), Scr.At(zx, zy+y))
+	// 				goto skipSETRGBA2
+	// 			}
+
+	// 		}
+	// 	}
+	// 	fmt.Printf("SUCCESS!?")
+	// 	//fmt.Printf("FOUND at: %v, %v\n", y, Dx)
+	// 	for zy := 0; zy < Dy; zy++ {
+	// 		Scr.SetRGBA(0, zy, color.RGBA{0, 255, 0, 255})
+	// 		Scr.SetRGBA(Dy-1, zy, color.RGBA{0, 255, 0, 255})
+	// 	}
+
+	// 	for zx := 0; zx < Dx; zx++ {
+	// 		Scr.SetRGBA(zx, 0, color.RGBA{0, 255, 0, 255})
+	// 		Scr.SetRGBA(zx, Dy-1, color.RGBA{0, 255, 0, 255})
+	// 	}
+
+	// skipSETRGBA2:
+	// }
+
+	// //fmt.Println(MainScr)
+
+	outputFile, err := os.Create("obvedenniy_3.png")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	png.Encode(outputFile, MainScr)
+}
