@@ -4,146 +4,200 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/png"
 	_ "image/png"
 	"os"
 )
 
-type picture struct{
-img image.Image   
-ptr *image.RGBA
-sDx,sDy,Dx,Dy int  //dlinna shirina
+type picture struct {
+	img image.Image
+	ptr *image.RGBA
+	dim dimensions
+	sym string
+}
+
+type dimensions struct {
+	Dx, Dy int //dlinna shirina
 }
 
 func main() {
 
-num:=[12]picture
+	var num [12]picture
+	var control [4]picture
+	Screenshot, maxY, maxX := createpic("Screenshot", "tstsmple"), 0, 0
+	sDy, sDx := Screenshot.dim.Dy, Screenshot.dim.Dx
+	//var tX,tY int
+	control[0] = createpic("HZ", "HZ")
+	control[1] = createpic("Andres", "andres")
+	control[2] = createpic("START", "START")
+	control[3] = createpic("END", "END")
 
-	RAWscr, err := os.Open("tstsmple.png")
+	var hz, start, end string
+	var andres bool
+
+	//var word string
+	var c uint8 = 0
+
+	for n, s := 0, ""; n <= 9; n++ {
+
+		s = string('0' + n)
+		num[n] = createpic(s, s)
+		maxX, maxY = num[n].dim.maxpix(maxX, maxY)
+	}
+
+	num[10] = createpic(".", "dot")
+	maxX, maxY = num[10].dim.maxpix(maxX, maxY)
+
+	num[11] = createpic(":", "dot_dot")
+	maxX, maxY = num[11].dim.maxpix(maxX, maxY)
+
+	for y := 0; y < sDy-maxY; y++ {
+		for x := 0; x < sDx-maxX; x++ {
+
+			if Screenshot.searchPic(x, y, control[c]) { //zapisat' "word" esli naidena cifra
+				switch c {
+				case 0:
+					{
+						hz = Screenshot.findvert(x, y+12, num)
+						y = y + 12
+						x = x + 40
+					}
+				case 1:
+					andres = true
+					y = y + 256
+
+				case 2:
+					start = Screenshot.findvert(x+control[2].dim.Dx+30, y-3, num)
+
+				case 3:
+					end = Screenshot.findvert(x+control[3].dim.Dx+40, y-4, num)
+
+				case 4:
+					fmt.Println("ERROR case4!")
+				}
+				c++
+				if c > 3 {
+					goto printresults
+				}
+			}
+
+		}
+
+	}
+
+printresults:
+
+	fmt.Printf("Hz: %v\n", hz)
+	fmt.Printf("andres: %v\n", andres)
+	fmt.Printf("Start: %v\n", start)
+	fmt.Printf("End: %v\n", end)
+
+	//fmt.Println(word)
+
+	// outputFile, err := os.Create("obvedenniy_3.png")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
+	// png.Encode(outputFile, Screenshot.img)
+	// fmt.Println("File created.")
+
+}
+
+func createpic(symbol, filename string) picture {
+	var char picture
+	char.sym = symbol
+
+	RAWscr, err := os.Open(filename + ".png")
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer RAWscr.Close()
 
-	MainScr, _, err := image.Decode(RAWscr)
+	char.img, _, err = image.Decode(RAWscr)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	//var numPrime [12]image.Image
-	//var num [12]*image.RGBA
-	for n := '0'; n <= '9'; n++ {
+	char.ptr = char.img.(*image.RGBA)
+	char.dim.Dy, char.dim.Dx = char.ptr.Bounds().Dy(), char.ptr.Bounds().Dx()
+	return char
+}
 
-		RAWscr, err = os.Open(string(n) + ".png")
-		if err != nil {
-			fmt.Println(err)
-		}
+func (bigPic picture) findvert(x, y int, num [12]picture) string {
+	x0 := x
+	var word string
 
-		num.img[n], _, err = image.Decode(RAWscr)
-		if err != nil {
-			fmt.Println(err)
-		}
-		num.ptr[n] = num.img[n].(*image.RGBA)
+	for xt := x; xt+6 < bigPic.dim.Dx && xt-x0 < 10; xt++ {
+		for yt := y; yt < y+10; yt++ {
 
-	num[n].Dx, num[n].Dx := num[n].ptr.Bounds().Dy(), num[n].ptr.Bounds().Dx()
-	}
-	// switch num0.(type) {
-	// case *image.RGBA:
-	// 	fmt.Println("RGBA")
-	// 	// i in an *image.RGBA
-	// case *image.NRGBA:
-	// 	fmt.Println("nRGBA")
-	// 	// i in an *image.NRBGA
-	// }
-	//Scr.At(x+nx, y+ny)
-
-	Scr := MainScr.(*image.RGBA)
-	sDy, sDx := Scr.Rect.Dy(), Scr.Rect.Dx()
-
-
-
-	for y := 0; y < sDy; y++ {
-		if y >= sDy-num0.Bounds().Dy() {
-			break
-		}
-
-		for x := 0; x < sDx; x++ {
-/*
-			if x >= sDx-num0.Bounds().Dx() {
-				break
-			}*/
-
-for n:=0;n<12;n++{
-			for ny := 0; ny < Dy; ny++ {
-				for nx := 0; nx < Dx; nx++ {
-					if num[n].ptr.At(nx, ny) != Scr.At(x+nx, y+ny) {
-						//	fmt.Printf("failed at: %v, %v\n", x, y)
-						goto skipSETRGBA
-					}
+			for n := 0; n < 12; n++ {
+				if bigPic.searchPic(xt, yt, num[n]) {
+					word += num[n].sym
+					x0 = xt
 				}
 			}
 
-
-
-			//fmt.Println("Success!")
-			for zy := 0; zy < Dy; zy++ {
-				Scr.SetRGBA(x+0, y+zy, color.RGBA{0, 255, 0, 255})
-				Scr.SetRGBA(x+Dx-1, y+zy, color.RGBA{0, 255, 0, 255})
-			}
-
-			for zx := 0; zx < Dx; zx++ {
-				Scr.SetRGBA(x+zx, y+0, color.RGBA{0, 255, 0, 255})
-				Scr.SetRGBA(x+zx, y+Dy-1, color.RGBA{0, 255, 0, 255})
-			}
-		skipSETRGBA:
-}//kovichka ot for
 		}
+	}
+	return word
+}
 
+func (bigPic picture) findhor(x, y int, num [12]picture) string {
+	x0 := x
+	var word string
+
+	for yt := y; yt < y+11; yt++ {
+		for xt := x; xt+6 < bigPic.dim.Dx && xt-x0 < 8; xt++ {
+
+			for n := 0; n < 12; n++ {
+				if bigPic.searchPic(xt, yt, num[n]) {
+					word += num[n].sym
+					x0 = xt
+				}
+			}
+
+		}
+	}
+	return word
+}
+
+func (bigPic *picture) searchPic(x, y int, obj picture) bool {
+
+	if bigPic.dim.Dx-x < obj.dim.Dx || bigPic.dim.Dy-y < obj.dim.Dy {
+		return false
+	}
+	for Ny := 0; Ny < obj.dim.Dy; Ny++ {
+		for Nx := 0; Nx < obj.dim.Dx; Nx++ {
+			if obj.ptr.At(Nx, Ny) != bigPic.ptr.At(x+Nx, y+Ny) {
+
+				return false //goto skipSETRGBA
+			}
+		}
+	}
+	bigPic.greenbox(x, y, obj)
+	return true
+}
+
+func (screenshot *picture) greenbox(x, y int, num picture) {
+	for zy := 0; zy < num.dim.Dy; zy++ {
+		screenshot.ptr.SetRGBA(x+0, y+zy, color.RGBA{0, 255, 0, 255})
+		screenshot.ptr.SetRGBA(x+num.dim.Dx-1, y+zy, color.RGBA{0, 255, 0, 255})
 	}
 
-	// //	fmt.Println(MainScr.At(0, 0))
-	// Scr.SetRGBA(0, 0, color.RGBA{0, 255, 0, 255})
-	// Scr.SetRGBA(0, 1, color.RGBA{0, 255, 0, 255})
-	// Scr.SetRGBA(0, 2, color.RGBA{0, 255, 0, 255})
-	// Scr.SetRGBA(0, 3, color.RGBA{0, 255, 0, 255})
-	// Scr.SetRGBA(1, 1, color.RGBA{0, 255, 0, 255})
-	// Scr.SetRGBA(2, 1, color.RGBA{0, 255, 0, 255})
-	// Scr.SetRGBA(3, 1, color.RGBA{0, 255, 0, 255})
-	// Scr.SetRGBA(75, 75, color.RGBA{3, 3, 3, 255})
-	// //	fmt.Println(MainScr.At(0, 0))
+	for zx := 0; zx < num.dim.Dx; zx++ {
+		screenshot.ptr.SetRGBA(x+zx, y+0, color.RGBA{0, 255, 0, 255})
+		screenshot.ptr.SetRGBA(x+zx, y+num.dim.Dy-1, color.RGBA{0, 255, 0, 255})
 
-	// for y := 0; y < 10; y++ {
-
-	// 	for zy := 0; zy < Dy; zy++ {
-	// 		for zx := 0; zx < Dx; zx++ {
-	// 			if num0.At(zx, zy) != Scr.At(zx, zy+y) {
-	// 				fmt.Printf("F %v\t%v\n", num0.At(zx, zy), Scr.At(zx, zy+y))
-	// 				goto skipSETRGBA2
-	// 			}
-
-	// 		}
-	// 	}
-	// 	fmt.Printf("SUCCESS!?")
-	// 	//fmt.Printf("FOUND at: %v, %v\n", y, Dx)
-	// 	for zy := 0; zy < Dy; zy++ {
-	// 		Scr.SetRGBA(0, zy, color.RGBA{0, 255, 0, 255})
-	// 		Scr.SetRGBA(Dy-1, zy, color.RGBA{0, 255, 0, 255})
-	// 	}
-
-	// 	for zx := 0; zx < Dx; zx++ {
-	// 		Scr.SetRGBA(zx, 0, color.RGBA{0, 255, 0, 255})
-	// 		Scr.SetRGBA(zx, Dy-1, color.RGBA{0, 255, 0, 255})
-	// 	}
-
-	// skipSETRGBA2:
-	// }
-
-	// //fmt.Println(MainScr)
-
-	outputFile, err := os.Create("obvedenniy_3.png")
-	if err != nil {
-		fmt.Println(err)
 	}
+}
 
-	png.Encode(outputFile, MainScr)
+func (leng dimensions) maxpix(MaxX, MaxY int) (int, int) {
+	if leng.Dx > int(MaxX) {
+		MaxX = leng.Dx
+	}
+	if leng.Dy > int(MaxY) {
+		MaxY = leng.Dy
+	}
+	return MaxX, MaxY
 }
