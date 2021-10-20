@@ -9,7 +9,15 @@ import (
 	"os"
 )
 
+type picture struct{
+img image.Image   
+ptr *image.RGBA
+sDx,sDy,Dx,Dy int  //dlinna shirina
+}
+
 func main() {
+
+num:=[12]picture
 
 	RAWscr, err := os.Open("tstsmple.png")
 	if err != nil {
@@ -22,8 +30,8 @@ func main() {
 		fmt.Println(err)
 	}
 
-	var numPrime [12]image.Image
-	var num [12]*image.RGBA
+	//var numPrime [12]image.Image
+	//var num [12]*image.RGBA
 	for n := '0'; n <= '9'; n++ {
 
 		RAWscr, err = os.Open(string(n) + ".png")
@@ -31,11 +39,13 @@ func main() {
 			fmt.Println(err)
 		}
 
-		numPrime[n], _, err = image.Decode(RAWscr)
+		num.img[n], _, err = image.Decode(RAWscr)
 		if err != nil {
 			fmt.Println(err)
 		}
-		num[n] = numPrime[n].(*image.RGBA)
+		num.ptr[n] = num.img[n].(*image.RGBA)
+
+	num[n].Dx, num[n].Dx := num[n].ptr.Bounds().Dy(), num[n].ptr.Bounds().Dx()
 	}
 	// switch num0.(type) {
 	// case *image.RGBA:
@@ -48,9 +58,9 @@ func main() {
 	//Scr.At(x+nx, y+ny)
 
 	Scr := MainScr.(*image.RGBA)
-
 	sDy, sDx := Scr.Rect.Dy(), Scr.Rect.Dx()
-	Dy, Dx := num0.Bounds().Dy(), num0.Bounds().Dx()
+
+
 
 	for y := 0; y < sDy; y++ {
 		if y >= sDy-num0.Bounds().Dy() {
@@ -58,21 +68,24 @@ func main() {
 		}
 
 		for x := 0; x < sDx; x++ {
-
+/*
 			if x >= sDx-num0.Bounds().Dx() {
 				break
-			}
+			}*/
 
+for n:=0;n<12;n++{
 			for ny := 0; ny < Dy; ny++ {
 				for nx := 0; nx < Dx; nx++ {
-					if num0.At(nx, ny) != Scr.At(x+nx, y+ny) {
+					if num[n].ptr.At(nx, ny) != Scr.At(x+nx, y+ny) {
 						//	fmt.Printf("failed at: %v, %v\n", x, y)
 						goto skipSETRGBA
 					}
 				}
 			}
 
-			fmt.Println("Success!")
+
+
+			//fmt.Println("Success!")
 			for zy := 0; zy < Dy; zy++ {
 				Scr.SetRGBA(x+0, y+zy, color.RGBA{0, 255, 0, 255})
 				Scr.SetRGBA(x+Dx-1, y+zy, color.RGBA{0, 255, 0, 255})
@@ -83,6 +96,7 @@ func main() {
 				Scr.SetRGBA(x+zx, y+Dy-1, color.RGBA{0, 255, 0, 255})
 			}
 		skipSETRGBA:
+}//kovichka ot for
 		}
 
 	}
