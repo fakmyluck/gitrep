@@ -21,11 +21,11 @@ type dimensions struct {
 
 func main() {
 
-	filename := "888"
+	filename := "8_fail"
 	imag := openimg(filename)
 
 	// save file
-	outputFile, err := os.Create(filename + ".png")
+	outputFile, err := os.Create("../pics/" + filename + ".png")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -37,7 +37,7 @@ func main() {
 
 func openimg(filename string) *image.RGBA {
 
-	RAWscr, err := os.Open("../pics/" + filename + ".png")
+	RAWscr, err := os.Open("../originals/" + filename + ".png")
 	if err != nil {
 		fmt.Println(err)
 	}
