@@ -7,7 +7,6 @@ import (
 	"image/png"
 	_ "image/png"
 	"os"
-	"slucker/SCREEN_PNG/convert"
 	"slucker/SCREEN_PNG/screenshot"
 	"slucker/SCREEN_PNG/tim"
 )
@@ -52,7 +51,7 @@ type todisplay struct {
 	dezh  byte
 	start tim.Time
 	end   tim.Time
-	sub   uint16
+	sub   int32
 }
 
 // func savetofile(filename string, a, e todisplay) {
@@ -93,25 +92,27 @@ func main() {
 	var enable_screenshot bool = false
 
 	for p := 0; p < 15; p++ {
-
+		fmt.Println("[help] -помощ")
 	input_switch:
 		for {
-			fmt.Println("[help] -помощ")
+
 			fmt.Scan(&key_input)
 			switch key_input {
 			case "e", "E", "Exit", "EXIT", "exit", "у", "учше", "[exit]":
 				return
 			case "reset", "RESET", "R", "r", "Reset", "к", "куыуе", "[reset]":
 				disE = nil
-				fmt.Println("\nСписок Эдуарда отчищен.")
+				fmt.Println("\nСписок Э. отчищен.")
 			case "reseta", "RESETA", "RA", "ra", "Reseta", "куыуеф", "кф":
 				disA = nil
-				fmt.Println("\nСписок Андреса отчищен.")
+				fmt.Println("\nСписок А. отчищен.")
 			case "", "s", "S", "screen", "[s]", "ы":
 				break input_switch
 			case "h", "help", "Help", "HELP", "рудз", "р", "[help]":
 				fmt.Println("\n\n[screen] или [s] -добавить наряд (наряд должен быть на экране от [НЗ:] до [Факт. заверш.:]")
 				fmt.Println("[reset] или [r] -отчистить список		(ra)")
+				fmt.Println("[exit] или [e] -выход")
+				fmt.Println("[es] [ds] -enable/disable screenshot")
 			case "enablescreenshot", "enables", "es":
 				enable_screenshot = true
 				fmt.Println("Screenshot enabled.")
@@ -127,19 +128,19 @@ func main() {
 		Screenshot := takescreenshot("Screenshot")
 		scan.hz = Screenshot.findvert(Screenshot.findCoords(hz), num)
 		if scan.hz == "" {
-			fmt.Println("ERROR scan.hz")
-			///gfdgdfg pererabotka errora DODEAT' <<<<<<<<<<<<<<
+			fmt.Println("ERROR scan.hz (убрать выделение с номера наряда)") ///gfdgdfg pererabotka errora DODEAT' <<<<<<<<<<<<<<
 		}
 
 		if Screenshot.findCoords(Andres) != (coords{-1, -1}) {
 			scan.name = Andres.img.sym
 		} else if Screenshot.findCoords(Eduard) != (coords{-1, -1}) {
 			scan.name = Eduard.img.sym
+		} else {
+			fmt.Println("не нашёл имени")
 		}
 
 		if Screenshot.findCoords(dezh) != (coords{-1, -1}) {
 			scan.dezh = dezh.img.sym
-
 		}
 
 		scan.start = Screenshot.findvert(Screenshot.findCoords(start), num)
@@ -163,53 +164,49 @@ func main() {
 	}
 }
 
+func displayforloop(disp []todisplay) {
+	for n := 0; n < len(disp); n++ {
+		fmt.Printf("%v, %v.%02d %02d:%02d - %v.%02d %02d:%02d [%.2f]", disp[n].HZ /**/, disp[n].start.Day, disp[n].start.Mon, disp[n].start.Hour, disp[n].start.Min /**/, disp[n].end.Day, disp[n].start.Mon, disp[n].end.Hour, disp[n].end.Min /**/, float32(disp[n].sub)/3600)
+		if disp[n].dezh == 'D' {
+			fmt.Printf(" (%.2f)", countdezh(disp)/3600)
+		}
+		fmt.Println()
+	}
+}
+
+func countdezh(disp []todisplay) float32 {
+	var dezh int32
+	var sum int32
+	for i := 0; i < len(disp); i++ {
+		if (disp)[i].dezh != 0 {
+			dezh = (disp)[i].sub
+		} else {
+			sum += (disp)[i].sub
+		}
+	}
+	return float32(dezh - sum)
+}
+
 func display(disp todisplay) {
-	fmt.Printf("%v, %v.%02d %02d:%02d - %v.%02d %02d:%02d [%.2f]", disp.HZ /**/, disp.start.Day, disp.start.Mon, disp.start.Hour, disp.start.Min /**/, disp.end.Day, disp.start.Mon, disp.end.Hour, disp.end.Min /**/, float32(disp.sub)/60)
+	fmt.Printf("%v, %v.%02d %02d:%02d - %v.%02d %02d:%02d [%.2f]\n", disp.HZ /**/, disp.start.Day, disp.start.Mon, disp.start.Hour, disp.start.Min /**/, disp.end.Day, disp.start.Mon, disp.end.Hour, disp.end.Min /**/, float32(disp.sub)/3600)
 }
 
 func displayloop(disAndres []todisplay, disEduard []todisplay, name byte) {
 	if name == 'A' {
 		if disEduard != nil {
 			fmt.Println("Eduard:")
-			for i := 0; i < len(disEduard); i++ {
-				display(disEduard[i])
-				if disEduard[i].dezh != 0 {
-					fmt.Printf(" (%.2f)", countdezh(disEduard)/60)
-				}
-				fmt.Println()
-			}
+			displayforloop(disEduard)
 		}
-		if disAndres != nil {
-			fmt.Println("\nAndres:")
-			for i := 0; i < len(disAndres); i++ {
-				display(disAndres[i])
-				if disAndres[i].dezh != 0 {
-					fmt.Printf(" (%.2f)", countdezh(disAndres)/60)
-				}
-				fmt.Println()
-			}
-		}
+		fmt.Println("\nAndres:")
+		displayforloop(disAndres)
 	} else if name == 'E' {
 		if disAndres != nil {
 			fmt.Println("Andres:")
-			for i := 0; i < len(disAndres); i++ {
-				display(disAndres[i])
-				if disAndres[i].dezh != 0 {
-					fmt.Printf(" (%.2f)", countdezh(disAndres)/60)
-				}
-				fmt.Println()
-			}
+			displayforloop(disAndres)
 		}
-		if disEduard != nil {
-			fmt.Println("\nEduard:")
-			for i := 0; i < len(disEduard); i++ {
-				display(disEduard[i])
-				if disEduard[i].dezh != 0 {
-					fmt.Printf(" (%.2f)", countdezh(disEduard)/60)
-				}
-				fmt.Println()
-			}
-		}
+		fmt.Println("\nEduard:")
+		displayforloop(disEduard)
+
 	} else {
 		fmt.Printf("tmp.name [%v] failed!\n", name)
 	}
@@ -235,73 +232,68 @@ func removeold(tmpdisp todisplay, disp *[]todisplay) {
 	if *disp == nil {
 		return
 	}
-	for i := len(*disp) - 1; i >= 0; i-- {
-		if tim.Subtime((*disp)[i].start, tmpdisp.start) > 800 {
-			*disp = (*disp)[i+1 : len(*disp)]
-			return
+	n := len(*disp) - 1
+	for i := n; i >= 0; i-- {
+		if tmpdisp.start.Units-(*disp)[i].start.Units > 50000 {
+			if n == i {
+				if n == 0 {
+					(*disp)[i] = tmpdisp
+					return
+				}
+				n--
+			} else {
+				(*disp)[i] = (*disp)[n]
+				n--
+			}
 		}
+	}
+	if n != len(*disp)-1 {
+		(*disp) = (*disp)[0:n]
 	}
 }
 
-func countdezh(disp []todisplay) float32 {
-	var dezh int16
-	var sum int16
-	for i := 0; i < len(disp); i++ {
-		if (disp)[i].dezh != 0 {
-			dezh = int16((disp)[i].sub)
-		} else {
-			sum += int16((disp)[i].sub)
-		}
-	}
-	return float32(dezh - sum)
-}
+// func disptobyte(a todisplay) []byte {
+// 	var bytearray []byte //4 1 1 (2*6)*2 2 -> 32
+// 	bytearray = append(bytearray, convert.Uint32tobyte(a.HZ)...)
+// 	bytearray = append(bytearray, a.name)
+// 	bytearray = append(bytearray, a.dezh)
+// 	bytearray = append(bytearray, rettimeinbytes(a.start)...)
+// 	bytearray = append(bytearray, rettimeinbytes(a.end)...)
+// 	bytearray = append(bytearray, convert.Uint16tobyte(a.sub)...)
+// 	return bytearray
+// }
 
-func disptobyte(a todisplay) []byte {
-	var bytearray []byte //4 1 1 (2*6)*2 2 -> 32
+// func rettimeinbytes(a tim.Time) []byte {
+// 	var bytearray []byte
+// 	bytearray = append(bytearray, convert.Uint16tobyte(a.Day)...)
+// 	bytearray = append(bytearray, convert.Uint16tobyte(a.Mon)...)
+// 	bytearray = append(bytearray, convert.Uint16tobyte(a.Year)...)
+// 	bytearray = append(bytearray, convert.Uint16tobyte(a.Hour)...)
+// 	bytearray = append(bytearray, convert.Uint16tobyte(a.Min)...)
+// 	return append(bytearray, convert.Uint16tobyte(a.Sec)...)
+// }
 
-	bytearray = append(bytearray, convert.Uint32tobyte(a.HZ)...)
+// // func frombytetodisplay(bytearray []byte) todisplay {
+// // 	var a todisplay
+// // 	a.HZ = convert.Bytetouint32(bytearray[0:4])
+// // 	a.name = bytearray[4]
+// // 	a.dezh = bytearray[5]
+// // 	a.start = frombytetotime(bytearray[6:18])
+// // 	a.end = frombytetotime(bytearray[18:30])
+// // 	a.sub = convert.Bytetouint16(bytearray[30:32])
+// // 	return a
+// // }
 
-	bytearray = append(bytearray, a.name)
-	bytearray = append(bytearray, a.dezh)
-
-	bytearray = append(bytearray, rettimeinbytes(a.start)...)
-	bytearray = append(bytearray, rettimeinbytes(a.end)...)
-
-	bytearray = append(bytearray, convert.Uint16tobyte(a.sub)...)
-	return bytearray
-}
-
-func rettimeinbytes(a tim.Time) []byte {
-	var bytearray []byte
-	bytearray = append(bytearray, convert.Uint16tobyte(a.Day)...)
-	bytearray = append(bytearray, convert.Uint16tobyte(a.Mon)...)
-	bytearray = append(bytearray, convert.Uint16tobyte(a.Year)...)
-	bytearray = append(bytearray, convert.Uint16tobyte(a.Hour)...)
-	bytearray = append(bytearray, convert.Uint16tobyte(a.Min)...)
-	return append(bytearray, convert.Uint16tobyte(a.Sec)...)
-}
-
-func frombytetodisplay(bytearray []byte) todisplay {
-	var a todisplay
-	a.HZ = convert.Bytetouint32(bytearray[0:4])
-	a.name = bytearray[4]
-	a.dezh = bytearray[5]
-	a.start = frombytetotime(bytearray[6:18])
-	a.end = frombytetotime(bytearray[18:30])
-	a.sub = convert.Bytetouint16(bytearray[30:32])
-	return a
-}
-
-func frombytetotime(bytearray []byte) tim.Time {
-	var a tim.Time
-	a.Day = convert.Bytetouint16(bytearray[0:2])
-	a.Mon = convert.Bytetouint16(bytearray[2:4])
-	a.Year = convert.Bytetouint16(bytearray[4:6])
-	a.Hour = convert.Bytetouint16(bytearray[6:8])
-	a.Min = convert.Bytetouint16(bytearray[8:10])
-	a.Sec = convert.Bytetouint16(bytearray[10:12])
-	return a
-}
+// func frombytetotime(bytearray []byte) tim.Time {
+// 	var a tim.Time
+// 	a.Day = convert.Bytetouint16(bytearray[0:2])
+// 	a.Mon = convert.Bytetouint16(bytearray[2:4])
+// 	a.Year = convert.Bytetouint16(bytearray[4:6])
+// 	a.Hour = convert.Bytetouint16(bytearray[6:8])
+// 	a.Min = convert.Bytetouint16(bytearray[8:10])
+// 	a.Sec = convert.Bytetouint16(bytearray[10:12])
+// 	return a
+// }
 
 func rawtodisplay(scan rawstr) (disp todisplay) {
 	disp.HZ = loopstring(scan.hz)
@@ -316,7 +308,11 @@ func rawtodisplay(scan rawstr) (disp todisplay) {
 	}
 	disp.start = tim.ToTime(scan.start)
 	disp.end = tim.ToTime(scan.end)
-	disp.sub = tim.Subtime(disp.start, disp.end)
+
+	disp.start.Units = tim.TimeToUnits(disp.start)
+	disp.end.Units = tim.TimeToUnits(disp.end)
+
+	disp.sub = disp.end.Units - disp.start.Units //tim.Subtime(disp.start, disp.end)
 	return
 }
 
