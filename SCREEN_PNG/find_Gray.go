@@ -83,7 +83,6 @@ func main() {
 
 	num[10] = createpic(".", "dot")
 	num[10].dim.maxpix(&max)
-
 	num[11] = createpic(":", "dot_dot")
 	num[11].dim.maxpix(&max)
 
@@ -91,8 +90,9 @@ func main() {
 	var key_input string
 	var enable_screenshot bool = false
 
+	fmt.Println("[help] -помощ")
 	for p := 0; p < 15; p++ {
-		fmt.Println("[help] -помощ")
+
 	input_switch:
 		for {
 
@@ -162,29 +162,24 @@ func main() {
 			Screenshot.printscreen("obvedenniy_3.png")
 		}
 	}
+
+	fmt.Println("Debug disA.dezh:") /// DEBUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+	for n := 0; n < len(disA); n++ {
+		fmt.Printf("%v [%v]\n", disA[n].HZ, disA[n].dezh)
+	}
 }
 
 func displayforloop(disp []todisplay) {
 	for n := 0; n < len(disp); n++ {
 		fmt.Printf("%v, %v.%02d %02d:%02d - %v.%02d %02d:%02d [%.2f]", disp[n].HZ /**/, disp[n].start.Day, disp[n].start.Mon, disp[n].start.Hour, disp[n].start.Min /**/, disp[n].end.Day, disp[n].start.Mon, disp[n].end.Hour, disp[n].end.Min /**/, float32(disp[n].sub)/3600)
+
+		fmt.Printf("\tDezhurstvo: [%v]", disp[n].dezh) //DEBUG UDALIT' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 		if disp[n].dezh == 'D' {
 			fmt.Printf(" (%.2f)", countdezh(disp)/3600)
 		}
 		fmt.Println()
 	}
-}
-
-func countdezh(disp []todisplay) float32 {
-	var dezh int32
-	var sum int32
-	for i := 0; i < len(disp); i++ {
-		if (disp)[i].dezh != 0 {
-			dezh = (disp)[i].sub
-		} else {
-			sum += (disp)[i].sub
-		}
-	}
-	return float32(dezh - sum)
 }
 
 func display(disp todisplay) {
@@ -210,6 +205,19 @@ func displayloop(disAndres []todisplay, disEduard []todisplay, name byte) {
 	} else {
 		fmt.Printf("tmp.name [%v] failed!\n", name)
 	}
+}
+
+func countdezh(disp []todisplay) float32 {
+	var dezh int32
+	var sum int32
+	for i := 0; i < len(disp); i++ {
+		if (disp)[i].dezh != 0 {
+			dezh = (disp)[i].sub
+		} else {
+			sum += (disp)[i].sub
+		}
+	}
+	return float32(dezh - sum)
 }
 
 func checkfordupes(tmpdisp todisplay, disp *[]todisplay) {
