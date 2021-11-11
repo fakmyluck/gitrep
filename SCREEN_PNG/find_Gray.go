@@ -33,11 +33,6 @@ type dimensions struct {
 	Dx, Dy int //dlinna shirina
 }
 
-type controll struct {
-	img       grayP
-	ots, nach coords
-}
-
 type coords struct {
 	X, Y int16
 }
@@ -54,37 +49,28 @@ type todisplay struct {
 	sub   int32
 }
 
+type controll struct {
+	img       grayP
+	ots, nach coords
+}
+type controllArray struct {
+	hz     controll
+	Andres controll
+	Eduard controll
+	dezh   controll
+	start  controll
+	end    controll
+	num    [12]grayP
+	max    maximum
+}
+
 // func savetofile(filename string, a, e todisplay) {
 
 // }
 
 func main() {
 
-	var num [12]grayP
-
-	//sDy, sDx := Screenshot.dim.Dy, Screenshot.dim.Dx
-	hz := controll{img: createpic("HZ", "HZ"), ots: coords{Y: 14}}
-	Andres := controll{img: createpic("Andres", "andres")}
-	Eduard := controll{img: createpic("Eduard", "eduard")}
-	dezh := controll{img: createpic("D", "dezh")}
-	start := controll{img: createpic("START", "START"), ots: coords{Y: -3}}
-	start.ots.X = int16(Andres.img.dim.Dx) + 50
-	end := controll{img: createpic("END", "END"), ots: coords{Y: -4}}
-	end.ots.X = int16(Andres.img.dim.Dx) + 68
-
-	var max maximum
-	var scan rawstr
-
-	for n, s := 0, ""; n <= 9; n++ {
-		s = string('0' + n)
-		num[n] = createpic(s, s)
-		num[n].dim.maxpix(&max)
-	}
-
-	num[10] = createpic(".", "dot")
-	num[10].dim.maxpix(&max)
-	num[11] = createpic(":", "dot_dot")
-	num[11].dim.maxpix(&max)
+	cnt := createcontroll()
 
 	var disE, disA []todisplay
 	var key_input string
@@ -126,28 +112,9 @@ func main() {
 		}
 
 		Screenshot := takescreenshot("Screenshot")
-		scan.hz = Screenshot.findvert(Screenshot.findCoords(hz), num)
-		if scan.hz == "" {
-			fmt.Println("ERROR scan.hz (убрать выделение с номера наряда)") ///gfdgdfg pererabotka errora DODEAT' <<<<<<<<<<<<<<
-		}
-
-		if Screenshot.findCoords(Andres) != (coords{-1, -1}) {
-			scan.name = Andres.img.sym
-		} else if Screenshot.findCoords(Eduard) != (coords{-1, -1}) {
-			scan.name = Eduard.img.sym
-		} else {
-			fmt.Println("не нашёл имени")
-		}
-
-		if Screenshot.findCoords(dezh) != (coords{-1, -1}) {
-			scan.dezh = dezh.img.sym
-		}
-
-		scan.start = Screenshot.findvert(Screenshot.findCoords(start), num)
-		scan.end = Screenshot.findvert(Screenshot.findCoords(end), num)
 
 		//FUNC podshet
-		tmpdisp := rawtodisplay(scan)
+		tmpdisp := rawtodisplay(Screenshot.scanit(cnt))
 
 		if tmpdisp.name == 'A' {
 			removeold(tmpdisp, &disA)
@@ -162,28 +129,60 @@ func main() {
 			Screenshot.printscreen("obvedenniy_3.png")
 		}
 	}
+}
 
-	fmt.Println("Debug disA.dezh:") /// DEBUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
-	for n := 0; n < len(disA); n++ {
-		fmt.Printf("%v [%v]\n", disA[n].HZ, disA[n].dezh)
+func createcontroll() (cnt controllArray) {
+	cnt.hz = controll{img: createpic("HZ", "HZ"), ots: coords{Y: 14}}
+	cnt.Andres = controll{img: createpic("Andres", "andres")}
+	cnt.Eduard = controll{img: createpic("Eduard", "eduard")}
+	cnt.dezh = controll{img: createpic("D", "dezh")}
+	cnt.start = controll{img: createpic("START", "START"), ots: coords{Y: -3}}
+	cnt.start.ots.X = int16(cnt.Andres.img.dim.Dx) + 50
+	cnt.end = controll{img: createpic("END", "END"), ots: coords{Y: -4}}
+	cnt.end.ots.X = int16(cnt.Andres.img.dim.Dx) + 68
+
+	for n, s := 0, ""; n <= 9; n++ {
+		s = string('0' + n)
+		cnt.num[n] = createpic(s, s)
+		cnt.num[n].dim.maxpix(&cnt.max)
 	}
+	cnt.num[10] = createpic(".", "dot")
+	cnt.num[10].dim.maxpix(&cnt.max)
+	cnt.num[11] = createpic(":", "dot_dot")
+	cnt.num[11].dim.maxpix(&cnt.max)
+
+	return
+}
+
+func (Screenshot *picture) scanit(cnt controllArray) (scan rawstr) {
+	scan.hz = Screenshot.findvert(Screenshot.findCoords(cnt.hz), cnt.num)
+	if scan.hz == "" {
+		fmt.Println("ERROR scan.hz (убрать выделение с номера наряда)")
+	}
+	if Screenshot.findCoords(cnt.Andres) != (coords{-1, -1}) {
+		scan.name = cnt.Andres.img.sym
+	} else if Screenshot.findCoords(cnt.Eduard) != (coords{-1, -1}) {
+		scan.name = cnt.Eduard.img.sym
+	} else {
+		fmt.Println("не нашёл имени")
+	}
+	if Screenshot.findCoords(cnt.dezh) != (coords{-1, -1}) {
+		scan.dezh = cnt.dezh.img.sym
+	}
+	scan.start = Screenshot.findvert(Screenshot.findCoords(cnt.start), cnt.num)
+	scan.end = Screenshot.findvert(Screenshot.findCoords(cnt.end), cnt.num)
+	return
 }
 
 func displayforloop(disp []todisplay) {
 	for n := 0; n < len(disp); n++ {
 		fmt.Printf("%v, %v.%02d %02d:%02d - %v.%02d %02d:%02d [%.2f]", disp[n].HZ /**/, disp[n].start.Day, disp[n].start.Mon, disp[n].start.Hour, disp[n].start.Min /**/, disp[n].end.Day, disp[n].start.Mon, disp[n].end.Hour, disp[n].end.Min /**/, float32(disp[n].sub)/3600)
 
-		fmt.Printf("\tDezhurstvo: [%v]", disp[n].dezh) //DEBUG UDALIT' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
 		if disp[n].dezh == 'D' {
 			fmt.Printf(" (%.2f)", countdezh(disp)/3600)
 		}
 		fmt.Println()
 	}
-}
-
-func display(disp todisplay) {
-	fmt.Printf("%v, %v.%02d %02d:%02d - %v.%02d %02d:%02d [%.2f]\n", disp.HZ /**/, disp.start.Day, disp.start.Mon, disp.start.Hour, disp.start.Min /**/, disp.end.Day, disp.start.Mon, disp.end.Hour, disp.end.Min /**/, float32(disp.sub)/3600)
 }
 
 func displayloop(disAndres []todisplay, disEduard []todisplay, name byte) {
@@ -270,7 +269,6 @@ func removeold(tmpdisp todisplay, disp *[]todisplay) {
 // 	bytearray = append(bytearray, convert.Uint16tobyte(a.sub)...)
 // 	return bytearray
 // }
-
 // func rettimeinbytes(a tim.Time) []byte {
 // 	var bytearray []byte
 // 	bytearray = append(bytearray, convert.Uint16tobyte(a.Day)...)
@@ -280,7 +278,6 @@ func removeold(tmpdisp todisplay, disp *[]todisplay) {
 // 	bytearray = append(bytearray, convert.Uint16tobyte(a.Min)...)
 // 	return append(bytearray, convert.Uint16tobyte(a.Sec)...)
 // }
-
 // // func frombytetodisplay(bytearray []byte) todisplay {
 // // 	var a todisplay
 // // 	a.HZ = convert.Bytetouint32(bytearray[0:4])
@@ -291,7 +288,6 @@ func removeold(tmpdisp todisplay, disp *[]todisplay) {
 // // 	a.sub = convert.Bytetouint16(bytearray[30:32])
 // // 	return a
 // // }
-
 // func frombytetotime(bytearray []byte) tim.Time {
 // 	var a tim.Time
 // 	a.Day = convert.Bytetouint16(bytearray[0:2])
@@ -301,6 +297,16 @@ func removeold(tmpdisp todisplay, disp *[]todisplay) {
 // 	a.Min = convert.Bytetouint16(bytearray[8:10])
 // 	a.Sec = convert.Bytetouint16(bytearray[10:12])
 // 	return a
+// }
+// func strtoi16(s string) int16 {
+// 	var sum int16
+// 	i := len(s) - 1
+// 	var mult int16 = 1
+// 	for ; i >= 0 && (s)[i] != ' ' && (s)[i] != ':' && (s)[i] != '.'; i-- {
+// 		sum += (int16((s)[i]) - '0') * mult
+// 		mult *= 10
+// 	}
+// 	return sum
 // }
 
 func rawtodisplay(scan rawstr) (disp todisplay) {
@@ -414,17 +420,6 @@ func (bigPic *picture) findvert(cords coords, num [12]grayP) string {
 		}
 	}
 	return word
-}
-
-func strtoi16(s string) int16 {
-	var sum int16
-	i := len(s) - 1
-	var mult int16 = 1
-	for ; i >= 0 && (s)[i] != ' ' && (s)[i] != ':' && (s)[i] != '.'; i-- {
-		sum += (int16((s)[i]) - '0') * mult
-		mult *= 10
-	}
-	return sum
 }
 
 func (bigPic *picture) searchPic(x, y int, obj grayP) bool {
