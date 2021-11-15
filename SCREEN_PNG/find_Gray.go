@@ -239,23 +239,26 @@ func removeold(tmpdisp todisplay, disp *[]todisplay) {
 	if *disp == nil {
 		return
 	}
-	n := len(*disp) - 1
-	for i := n; i >= 0; i-- {
+	last := len(*disp) - 1
+	for i := last; i >= 0; i-- {
 		if tmpdisp.start.Units-(*disp)[i].start.Units > 50000 {
-			if n == i {
-				if n == 0 {
-					(*disp)[i] = tmpdisp
+
+			if i == last {
+				if last == 0 {
+					*disp = nil
 					return
 				}
-				n--
+				last--
 			} else {
-				(*disp)[i] = (*disp)[n]
-				n--
+				(*disp)[i] = (*disp)[last]
+				last--
 			}
 		}
+
 	}
-	if n != len(*disp)-1 {
-		(*disp) = (*disp)[0:n]
+
+	if last != len(*disp)-1 {
+		(*disp) = (*disp)[0 : last+1]
 	}
 }
 
