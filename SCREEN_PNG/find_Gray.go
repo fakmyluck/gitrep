@@ -375,7 +375,7 @@ func createpic(symbol, filename string) grayP {
 	var char grayP
 	char.sym = symbol
 
-	RAWscr, err := os.Open("pics/Gray/" + filename + ".png")
+	RAWscr, err := os.Open("pics/Red/" + filename + ".png")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -431,14 +431,21 @@ func (bigPic *picture) searchPic(x, y int, obj grayP) bool {
 	if bigPic.dim.Dx-x < obj.dim.Dx || bigPic.dim.Dy-y < obj.dim.Dy {
 		return false
 	}
+	e = 0
 	for Ny := 0; Ny < obj.dim.Dy; Ny++ {
 		for Nx := 0; Nx < obj.dim.Dx; Nx++ {
+			R := bigPic.ptr.RGBAAt(x+Nx, y+Ny).R
+			r := obj.ptr.GrayAt(Nx, Ny).Y
 
-			_, G, _, _ := bigPic.ptr.At(x+Nx, y+Ny).RGBA()
-			_, g, _, _ := obj.ptr.At(Nx, Ny).RGBA()
-			if g != G {
+			if e == 2 {
+				R = (255 - R) / 110
+				r = r / 110
+			}
+			// _, G, _, _ := bigPic.ptr.At(x+Nx, y+Ny).RGBA()
+			// _, g, _, _ := obj.ptr.At(Nx, Ny).RGBA()
+			if r != R {
 				e++
-				if e > 1 {
+				if e > 2 {
 					return false //goto skipSETRGBA
 				}
 			}
