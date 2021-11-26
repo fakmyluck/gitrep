@@ -96,7 +96,13 @@ func main() {
 				break input_switch
 			case "h", "help", "Help", "HELP", "рудз", "р", "[help]":
 				fmt.Println("\n\n[screen] или [s] -добавить наряд (наряд должен быть на экране от [НЗ:] до [Факт. заверш.:]")
-				fmt.Println("[reset] или [r] -отчистить список		(ra)")
+				fmt.Println("\n\n\t1. Открыть новый наряд")
+				fmt.Println("\t2. Заполнить")
+				fmt.Println("\t3. СОХРОНИТЬ наряд [F12]")
+				fmt.Println("\t4. В данной програме написать [screen] или [s]")
+				fmt.Println("\t5. перейти к пункту 1.\n")
+				fmt.Println("[screen] или [s] -добавить наряд (наряд должен быть на экране от [НЗ:] до [Факт. заверш.:]")
+				fmt.Println("[reset] или [r] -отчистить список          (ra)")
 				fmt.Println("[exit] или [e] -выход")
 				fmt.Println("[es] [ds] -enable/disable screenshot")
 			case "enablescreenshot", "enables", "es":
@@ -241,7 +247,10 @@ func removeold(tmpdisp todisplay, disp *[]todisplay) {
 	}
 	last := len(*disp) - 1
 	for i := last; i >= 0; i-- {
-		if tmpdisp.start.Units-(*disp)[i].start.Units > 50000 {
+		dT := tmpdisp.start.Units - (*disp)[i].start.Units
+		if dT > 2_500_000 {
+			fmt.Printf("Разница во времени более месяца(%v дня),\nстарые наряды не удалены, ([R] чтобы стереть всё)", dT/86_400)
+		} else if dT > 50000 {
 
 			if i == last {
 				if last == 0 {
