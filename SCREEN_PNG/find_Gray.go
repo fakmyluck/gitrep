@@ -9,6 +9,7 @@ import (
 	"os"
 	"slucker/SCREEN_PNG/screenshot"
 	"slucker/SCREEN_PNG/tim"
+	"time"
 )
 
 type picture struct {
@@ -75,6 +76,11 @@ func main() {
 	var disE, disA []todisplay
 	var key_input string
 	var enable_screenshot bool = false
+	var timer_enabled bool = false
+
+	var tStart, tEnd time.Time
+
+	fmt.Println("timer_enabled", timer_enabled)
 
 	fmt.Println("[help] -помощ")
 	for p := 0; p < 15; p++ {
@@ -93,9 +99,11 @@ func main() {
 				disA = nil
 				fmt.Println("\nСписок А. отчищен.")
 			case "", "s", "S", "screen", "[s]", "ы":
+				if timer_enabled {
+					tStart = time.Now()
+				}
 				break input_switch
 			case "h", "help", "Help", "HELP", "рудз", "р", "[help]":
-				fmt.Println("\n\n[screen] или [s] -добавить наряд (наряд должен быть на экране от [НЗ:] до [Факт. заверш.:]")
 				fmt.Println("\n\n\t1. Открыть новый наряд")
 				fmt.Println("\t2. Заполнить")
 				fmt.Println("\t3. СОХРОНИТЬ наряд [F12]")
@@ -111,6 +119,14 @@ func main() {
 			case "disablescreenshot", "disables", "ds":
 				enable_screenshot = false
 				fmt.Println("Screenshot disabled.")
+			case "debug", "DEBUG", "Debug", "d", "D", "в", "В", "time", "T", "t", "е", "Е":
+				if timer_enabled {
+					timer_enabled = false
+					fmt.Println("Timer disabled.")
+				} else {
+					timer_enabled = true
+					fmt.Println("Timer enabled.")
+				}
 			default:
 				fmt.Println("! Неверный ввод.")
 			}
@@ -134,7 +150,13 @@ func main() {
 		if enable_screenshot {
 			Screenshot.printscreen("obvedenniy_3.png")
 		}
+
+		if timer_enabled {
+			tEnd = time.Now()
+			fmt.Println("Elapse time:", tEnd.Sub(tStart))
+		}
 	}
+
 }
 
 func createcontroll() (cnt controllArray) {
@@ -248,8 +270,8 @@ func removeold(tmpdisp todisplay, disp *[]todisplay) {
 	last := len(*disp) - 1
 	for i := last; i >= 0; i-- {
 		dT := tmpdisp.start.Units - (*disp)[i].start.Units
-		if dT > 2_500_000 {
-			fmt.Printf("Разница во времени более месяца(%v дня),\nстарые наряды не удалены, ([R] чтобы стереть всё)", dT/86_400)
+		if dT > 604_800 {
+			fmt.Printf("Разница во времени более недели(%v дня),\nстарые наряды не удалены, ([R] чтобы стереть всё)", dT/86_400)
 		} else if dT > 50000 {
 
 			if i == last {
@@ -420,6 +442,7 @@ func (bigPic *picture) findvert(cords coords, num [12]grayP) string {
 
 					if xt-x0-num[tmp].dim.Dx > 2 {
 						word += " "
+						//break
 					}
 					bigPic.greenbox(xt, yt, num[n])
 					word += num[n].sym
@@ -431,7 +454,65 @@ func (bigPic *picture) findvert(cords coords, num [12]grayP) string {
 
 		}
 	}
+
+	if word != "" {
+		return word
+
+	}
+
+	// Probivat' Siniy
+	for xt := x; xt+6 < bigPic.dim.Dx && xt-x0 < 10; xt++ {
+		for yt := y; yt < y+10; yt++ {
+
+			for n := 0; n < 12; n++ {
+
+				if bigPic.searchBluePic(xt, yt, num[n]) {
+
+					if xt-x0-num[tmp].dim.Dx > 2 {
+						word += " "
+						y = yt
+						break
+					}
+					bigPic.greenbox(xt, yt, num[n])
+					word += num[n].sym
+
+					x0 = xt
+					tmp = n
+				}
+			}
+
+		}
+	}
+
 	return word
+}
+
+func (bigPic *picture) searchBluePic(x, y int, obj grayP) bool {
+	var e byte
+
+	if bigPic.dim.Dx-x < obj.dim.Dx || bigPic.dim.Dy-y < obj.dim.Dy {
+		return false
+	}
+	e = 0
+	for Ny := 0; Ny < obj.dim.Dy; Ny++ {
+		for Nx := 0; Nx < obj.dim.Dx; Nx++ {
+			R := (255 - bigPic.ptr.RGBAAt(x+Nx, y+Ny).R) / 110
+			r := obj.ptr.GrayAt(Nx, Ny).Y / 110
+
+			if r != R {
+				e++
+				if e > 2 {
+					return false //goto skipSETRGBA
+				}
+			}
+		}
+	}
+
+	if e != 0 {
+		fmt.Printf("searchPic: ошибок в (%v) символе: %v\n", obj.sym, e)
+	}
+	bigPic.greenbox(x, y, obj)
+	return true
 }
 
 func (bigPic *picture) searchPic(x, y int, obj grayP) bool {
@@ -446,12 +527,6 @@ func (bigPic *picture) searchPic(x, y int, obj grayP) bool {
 			R := bigPic.ptr.RGBAAt(x+Nx, y+Ny).R
 			r := obj.ptr.GrayAt(Nx, Ny).Y
 
-			if e == 2 {
-				R = (255 - R) / 110
-				r = r / 110
-			}
-			// _, G, _, _ := bigPic.ptr.At(x+Nx, y+Ny).RGBA()
-			// _, g, _, _ := obj.ptr.At(Nx, Ny).RGBA()
 			if r != R {
 				e++
 				if e > 2 {
@@ -461,8 +536,8 @@ func (bigPic *picture) searchPic(x, y int, obj grayP) bool {
 		}
 	}
 
-	if e == 1 {
-		fmt.Println("searchPic: одна ошибка в символе (е=", e, ")")
+	if e != 0 {
+		fmt.Printf("searchPic: ошибок в (%v) символе: %v\n", obj.sym, e)
 	}
 	bigPic.greenbox(x, y, obj)
 	return true
