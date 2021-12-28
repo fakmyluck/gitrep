@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"gitrep/SCREEN_PNG/screenshot"
-	"gitrep/SCREEN_PNG/tim"
+	"screenshot"
+	"tim"
 	"image"
 	"image/color"
 	"image/png"
@@ -134,7 +134,6 @@ func main() {
 				{ //ruchnoy vvod
 					timer_enabled = false
 					tmpdisp = inputdate()
-					//	goto skip_sceenshot
 
 					goto skip_sceenshot
 				}
