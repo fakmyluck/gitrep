@@ -122,6 +122,10 @@ func ToTime(s string) Time {
 		Sec:  loopstring(&s),
 		Min:  loopstring(&s),
 		Hour: loopstring(&s),
+		//	Fix dlya 00:00 (24:00)
+		if Hour==0{
+			Hour=24
+		}
 		Year: loopstring(&s),
 		Mon:  loopstring(&s),
 		Day:  loopstring(&s),
