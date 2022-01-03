@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"screenshot"
-	"tim"
+	"./tim"
+	vovascreenshot	"./screenshot"
 	"image"
 	"image/color"
 	"image/png"

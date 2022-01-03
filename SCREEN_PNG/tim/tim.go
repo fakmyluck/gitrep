@@ -123,13 +123,13 @@ func ToTime(s string) Time {
 		Min:  loopstring(&s),
 		Hour: loopstring(&s),
 		//	Fix dlya 00:00 (24:00)
-		if Hour==0{
-			Hour=24
-		}
 		Year: loopstring(&s),
 		Mon:  loopstring(&s),
 		Day:  loopstring(&s),
 	}
+		if T.Hour==0{
+			T.Hour=24
+		}
 	return T
 }
 
